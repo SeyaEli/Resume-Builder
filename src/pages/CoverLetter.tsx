@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FileEdit, Copy, Download, Sparkles, Building2, User, ArrowRight, Check
+  FileEdit, Copy, Download, Sparkles, Building2, User, Check
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import type { CoverLetterStyle, CoverLetter, Resume } from '../types/resume';
@@ -55,7 +55,7 @@ function generateCoverLetterContent(resume: Resume, jobTitle: string, company: s
 }
 
 export default function CoverLetterPage() {
-  const { resumes, activeResumeId, coverLetters, addCoverLetter, setPage } = useResumeStore();
+  const { resumes, activeResumeId, coverLetters, addCoverLetter } = useResumeStore();
   const [selectedStyle, setSelectedStyle] = useState<CoverLetterStyle>('modern');
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
@@ -108,7 +108,7 @@ export default function CoverLetterPage() {
       <div className="section-header">
         <div>
           <h1 className="section-title">
-            <span className="gradient-text">Cover Letter Generator</span>
+            Cover Letter Generator
           </h1>
           <p className="section-subtitle">Create personalized, ATS-friendly cover letters in seconds</p>
         </div>
@@ -173,18 +173,18 @@ export default function CoverLetterPage() {
                         <div className="flex items-center gap-3">
                           <div style={{
                             width: 36, height: 36, borderRadius: 'var(--radius-md)',
-                            background: selectedStyle === s.key ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.08)',
+                            background: selectedStyle === s.key ? 'var(--accent-subtle)' : 'var(--bg-tertiary)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: selectedStyle === s.key ? 'var(--accent-blue)' : 'var(--text-tertiary)',
+                            color: selectedStyle === s.key ? 'var(--accent-primary)' : 'var(--text-muted)',
                           }}>
                             {s.icon}
                           </div>
                           <div>
                             <div className="font-semibold text-sm">{s.label}</div>
-                            <div className="text-xs text-tertiary">{s.desc}</div>
+                            <div className="text-xs text-muted">{s.desc}</div>
                           </div>
                           {selectedStyle === s.key && (
-                            <Check size={16} style={{ marginLeft: 'auto', color: 'var(--accent-blue)' }} />
+                            <Check size={16} style={{ marginLeft: 'auto', color: 'var(--accent-primary)' }} />
                           )}
                         </div>
                       </button>

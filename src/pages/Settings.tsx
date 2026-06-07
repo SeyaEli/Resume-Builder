@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, Globe, Palette, Save, Trash2, Download, Database } from 'lucide-react';
+import { Globe, Palette, Save, Trash2, Download, Database } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import type { TemplateType } from '../types/resume';
 
@@ -52,7 +52,7 @@ export default function Settings() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
       <div className="section-header">
         <div>
-          <h1 className="section-title"><span className="gradient-text">Settings</span></h1>
+          <h1 className="section-title">Settings</h1>
           <p className="section-subtitle">Customize your experience</p>
         </div>
       </div>
@@ -61,10 +61,10 @@ export default function Settings() {
         {/* Language */}
         <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <div className="flex items-center gap-3 mb-4">
-            <Globe size={20} style={{ color: 'var(--accent-blue)' }} />
+            <Globe size={20} style={{ color: 'var(--accent-primary)' }} />
             <div>
               <h3 className="font-semibold">Language</h3>
-              <p className="text-xs text-tertiary">Choose your preferred language</p>
+              <p className="text-xs text-muted">Choose your preferred language</p>
             </div>
           </div>
           <select className="input-field" value={preferences.language} onChange={e => updatePref('language', e.target.value)}>
@@ -77,10 +77,10 @@ export default function Settings() {
         {/* Default Template */}
         <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <div className="flex items-center gap-3 mb-4">
-            <Palette size={20} style={{ color: 'var(--accent-violet)' }} />
+            <Palette size={20} style={{ color: 'var(--accent-primary)' }} />
             <div>
               <h3 className="font-semibold">Default Template</h3>
-              <p className="text-xs text-tertiary">Default template for new resumes</p>
+              <p className="text-xs text-muted">Default template for new resumes</p>
             </div>
           </div>
           <select className="input-field" value={preferences.defaultTemplate} onChange={e => updatePref('defaultTemplate', e.target.value as TemplateType)}>
@@ -99,10 +99,10 @@ export default function Settings() {
         <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Save size={20} style={{ color: 'var(--accent-emerald)' }} />
+              <Save size={20} style={{ color: 'var(--color-success)' }} />
               <div>
                 <h3 className="font-semibold">Auto-Save</h3>
-                <p className="text-xs text-tertiary">Automatically save changes as you type</p>
+                <p className="text-xs text-muted">Automatically save changes as you type</p>
               </div>
             </div>
             <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26 }}>
@@ -110,12 +110,13 @@ export default function Settings() {
                 style={{ opacity: 0, width: 0, height: 0 }} />
               <span style={{
                 position: 'absolute', cursor: 'pointer', inset: 0,
-                background: preferences.autoSave ? 'var(--accent-blue)' : 'rgba(148,163,184,0.2)',
+                background: preferences.autoSave ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
                 borderRadius: 13, transition: 'all 0.2s',
+                border: '1px solid var(--border-primary)',
               }}>
                 <span style={{
-                  position: 'absolute', width: 20, height: 20, left: preferences.autoSave ? 24 : 3, top: 3,
-                  background: 'white', borderRadius: '50%', transition: 'all 0.2s',
+                  position: 'absolute', width: 18, height: 18, left: preferences.autoSave ? 26 : 3, top: 3,
+                  background: preferences.autoSave ? 'var(--bg-primary)' : 'var(--text-muted)', borderRadius: '50%', transition: 'all 0.2s',
                 }} />
               </span>
             </label>
@@ -125,24 +126,24 @@ export default function Settings() {
         {/* Data Summary */}
         <motion.div className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <div className="flex items-center gap-3 mb-4">
-            <Database size={20} style={{ color: 'var(--accent-cyan)' }} />
+            <Database size={20} style={{ color: 'var(--accent-primary)' }} />
             <div>
               <h3 className="font-semibold">Your Data</h3>
-              <p className="text-xs text-tertiary">All data is stored locally in your browser</p>
+              <p className="text-xs text-muted">All data is stored locally in your browser</p>
             </div>
           </div>
           <div className="grid-3" style={{ gap: 12 }}>
-            <div style={{ padding: '12px', background: 'rgba(59,130,246,0.06)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+            <div style={{ padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
               <div className="text-2xl font-black text-accent">{resumes.length}</div>
-              <div className="text-xs text-tertiary">Resumes</div>
+              <div className="text-xs text-muted">Resumes</div>
             </div>
-            <div style={{ padding: '12px', background: 'rgba(139,92,246,0.06)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-              <div className="text-2xl font-black" style={{ color: 'var(--accent-violet)' }}>{coverLetters.length}</div>
-              <div className="text-xs text-tertiary">Cover Letters</div>
+            <div style={{ padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+              <div className="text-2xl font-black" style={{ color: 'var(--accent-primary)' }}>{coverLetters.length}</div>
+              <div className="text-xs text-muted">Cover Letters</div>
             </div>
-            <div style={{ padding: '12px', background: 'rgba(16,185,129,0.06)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+            <div style={{ padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
               <div className="text-2xl font-black text-emerald">{chatMessages.length}</div>
-              <div className="text-xs text-tertiary">Chat Messages</div>
+              <div className="text-xs text-muted">Chat Messages</div>
             </div>
           </div>
         </motion.div>

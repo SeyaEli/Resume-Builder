@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Sparkles, ArrowRight, CheckCircle2, AlertTriangle, RefreshCw, Zap,
-  TrendingUp, Eye
+  Sparkles, CheckCircle2, AlertTriangle, RefreshCw, Zap,
+  TrendingUp, Eye, Bot
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 
@@ -76,20 +76,20 @@ export default function Optimizer() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
       <div className="section-header">
         <div>
-          <h1 className="section-title"><span className="gradient-text">Resume Optimizer</span></h1>
+          <h1 className="section-title">Resume Optimizer</h1>
           <p className="section-subtitle">AI-powered enhancements to maximize your ATS score and recruiter appeal</p>
         </div>
       </div>
 
       {/* Action Card */}
       <div className="glass-card mb-8" style={{ textAlign: 'center', padding: '3rem' }}>
-        <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-xl)', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-          <Sparkles size={28} style={{ color: 'white' }} />
+        <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-md)', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+          <Bot size={28} style={{ color: 'var(--bg-primary)' }} />
         </div>
         <h2 className="text-xl font-bold mb-2">
           {optimized ? '✨ Resume Optimized!' : 'Optimize Your Resume'}
         </h2>
-        <p className="text-sm text-secondary mb-6" style={{ maxWidth: 500, margin: '0 auto 1.5rem' }}>
+        <p className="text-sm text-muted mb-6" style={{ maxWidth: 500, margin: '0 auto 1.5rem' }}>
           {optimized
             ? 'Your resume has been enhanced with stronger action verbs, quantified achievements, and ATS-optimized formatting.'
             : 'Our AI will analyze your resume and enhance weak bullet points, add metrics, improve action verbs, and ensure ATS compatibility.'
@@ -123,19 +123,19 @@ export default function Optimizer() {
       {/* What Gets Optimized */}
       <div className="grid-3 mb-8">
         {[
-          { icon: <Sparkles size={20} />, title: 'Action Verbs', desc: 'Replaces weak verbs with powerful, ATS-optimized alternatives', color: 'var(--accent-blue)' },
-          { icon: <TrendingUp size={20} />, title: 'Metrics & Impact', desc: 'Adds quantified achievements and measurable results', color: 'var(--accent-emerald)' },
-          { icon: <CheckCircle2 size={20} />, title: 'ATS Keywords', desc: 'Incorporates industry-specific keywords for better matching', color: 'var(--accent-violet)' },
-          { icon: <AlertTriangle size={20} />, title: 'Weak Phrasing', desc: 'Eliminates passive voice and vague descriptions', color: 'var(--accent-amber)' },
-          { icon: <Eye size={20} />, title: 'Recruiter Appeal', desc: 'Formats content for maximum readability and impact', color: 'var(--accent-cyan)' },
-          { icon: <RefreshCw size={20} />, title: 'Summary Generation', desc: 'Creates or enhances your professional summary', color: 'var(--accent-pink)' },
+          { icon: <Sparkles size={20} />, title: 'Action Verbs', desc: 'Replaces weak verbs with powerful, ATS-optimized alternatives', color: 'var(--color-info)' },
+          { icon: <TrendingUp size={20} />, title: 'Metrics & Impact', desc: 'Adds quantified achievements and measurable results', color: 'var(--color-success)' },
+          { icon: <CheckCircle2 size={20} />, title: 'ATS Keywords', desc: 'Incorporates industry-specific keywords for better matching', color: 'var(--accent-primary)' },
+          { icon: <AlertTriangle size={20} />, title: 'Weak Phrasing', desc: 'Eliminates passive voice and vague descriptions', color: 'var(--color-warning)' },
+          { icon: <Eye size={20} />, title: 'Recruiter Appeal', desc: 'Formats content for maximum readability and impact', color: 'var(--color-info)' },
+          { icon: <RefreshCw size={20} />, title: 'Summary Generation', desc: 'Creates or enhances your professional summary', color: 'var(--accent-primary)' },
         ].map((item, i) => (
           <motion.div key={item.title} className="glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06 }}>
             <div className="flex items-center gap-3 mb-2">
               <div style={{ color: item.color }}>{item.icon}</div>
               <h3 className="font-semibold text-sm">{item.title}</h3>
             </div>
-            <p className="text-xs text-tertiary">{item.desc}</p>
+            <p className="text-xs text-muted">{item.desc}</p>
           </motion.div>
         ))}
       </div>
@@ -155,14 +155,14 @@ export default function Optimizer() {
               <span className="badge badge-amber mb-3">{ex.category}</span>
               <div className="grid-2" style={{ gap: 16 }}>
                 <div>
-                  <div className="text-xs font-semibold text-rose mb-2">BEFORE</div>
-                  <div style={{ padding: '12px 16px', background: 'rgba(244,63,94,0.06)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(244,63,94,0.15)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  <div className="text-xs font-semibold text-muted mb-2">BEFORE</div>
+                  <div style={{ padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-primary)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                     {ex.original}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-emerald mb-2">AFTER</div>
-                  <div style={{ padding: '12px 16px', background: 'rgba(16,185,129,0.06)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(16,185,129,0.15)', fontSize: '0.85rem' }}>
+                  <div className="text-xs font-semibold text-muted mb-2">AFTER</div>
+                  <div style={{ padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-secondary)', fontSize: '0.85rem' }}>
                     {ex.enhanced}
                   </div>
                 </div>

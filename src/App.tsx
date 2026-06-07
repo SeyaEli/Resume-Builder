@@ -189,9 +189,9 @@ export default function App() {
               style={{ cursor: 'pointer' }}
             >
               <CheckCircle2 size={18} style={{
-                color: toast.type === 'success' ? 'var(--accent-emerald)' :
-                  toast.type === 'error' ? 'var(--accent-rose)' :
-                    toast.type === 'warning' ? 'var(--accent-amber)' : 'var(--accent-blue)',
+                color: toast.type === 'success' ? 'var(--color-success)' :
+                  toast.type === 'error' ? 'var(--color-danger)' :
+                    toast.type === 'warning' ? 'var(--color-warning)' : 'var(--color-info)',
                 flexShrink: 0,
               }} />
               <span className="text-sm">{toast.message}</span>

@@ -576,8 +576,8 @@ export default function ResumeBuilder() {
               style={{ padding: '16px 12px' }}
             >
               <div className="template-card-icon" style={{
-                background: resume.metadata.template === key ? 'rgba(59,130,246,0.15)' : 'rgba(148,163,184,0.08)',
-                color: resume.metadata.template === key ? 'var(--accent-blue)' : 'var(--text-tertiary)',
+                background: resume.metadata.template === key ? 'var(--accent-subtle)' : 'var(--bg-tertiary)',
+                color: resume.metadata.template === key ? 'var(--accent-primary)' : 'var(--text-muted)',
               }}>
                 {TEMPLATE_ICONS[info.icon] || <FileText size={22} />}
               </div>
@@ -619,9 +619,9 @@ export default function ResumeBuilder() {
               onClick={() => setStep(i)}
               style={{
                 padding: '8px 14px', borderRadius: 'var(--radius-md)',
-                background: step === i ? 'rgba(59,130,246,0.12)' : i < step ? 'rgba(16,185,129,0.08)' : 'transparent',
-                border: `1px solid ${step === i ? 'rgba(59,130,246,0.3)' : i < step ? 'rgba(16,185,129,0.2)' : 'var(--glass-border)'}`,
-                color: step === i ? 'var(--accent-blue)' : i < step ? 'var(--accent-emerald)' : 'var(--text-tertiary)',
+                background: step === i ? 'var(--accent-subtle)' : i < step ? 'rgba(16,185,129,0.05)' : 'transparent',
+                border: `1px solid ${step === i ? 'var(--border-accent)' : i < step ? 'rgba(16,185,129,0.15)' : 'var(--border-primary)'}`,
+                color: step === i ? 'var(--accent-primary)' : i < step ? 'var(--color-success)' : 'var(--text-muted)',
                 fontSize: '0.8rem', fontWeight: step === i ? 600 : 500, whiteSpace: 'nowrap',
                 cursor: 'pointer', transition: 'all 0.15s ease',
               }}
@@ -630,7 +630,7 @@ export default function ResumeBuilder() {
               {s.label}
             </button>
             {i < STEPS.length - 1 && (
-              <div style={{ width: 20, height: 2, background: i < step ? 'var(--accent-emerald)' : 'var(--glass-border)', borderRadius: 1 }} />
+              <div style={{ width: 20, height: 2, background: i < step ? 'var(--color-success)' : 'var(--border-primary)', borderRadius: 1 }} />
             )}
           </div>
         ))}
@@ -654,11 +654,11 @@ export default function ResumeBuilder() {
             </AnimatePresence>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-8" style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+            <div className="flex items-center justify-between mt-8" style={{ borderTop: '1px solid var(--border-primary)', paddingTop: '1.5rem' }}>
               <button className="btn btn-ghost" disabled={step === 0} onClick={() => setStep(s => s - 1)}>
                 <ChevronLeft size={16} /> Back
               </button>
-              <span className="text-xs text-tertiary">Step {step + 1} of {STEPS.length}</span>
+              <span className="text-xs text-muted">Step {step + 1} of {STEPS.length}</span>
               <button className="btn btn-primary" disabled={step === STEPS.length - 1} onClick={() => setStep(s => s + 1)}>
                 Next <ChevronRight size={16} />
               </button>

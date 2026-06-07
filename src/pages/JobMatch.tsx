@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase, Search, Target, TrendingUp, Lightbulb, CheckCircle2, XCircle, AlertTriangle,
-  ArrowRight, Sparkles, BarChart3, Clipboard, Zap
+  ArrowRight, Sparkles, Clipboard, Zap
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import type { JobMatch, ExtractedKeywords } from '../types/resume';
@@ -125,9 +125,9 @@ function computeMatch(resumeText: string, jdKeywords: ExtractedKeywords): JobMat
 }
 
 function getScoreColor(score: number) {
-  if (score >= 80) return 'var(--accent-emerald)';
-  if (score >= 60) return 'var(--accent-amber)';
-  return 'var(--accent-rose)';
+  if (score >= 80) return 'var(--color-success)';
+  if (score >= 60) return 'var(--color-warning)';
+  return 'var(--color-danger)';
 }
 
 function ScoreRingSmall({ score, label, size = 80 }: { score: number; label: string; size?: number }) {
@@ -191,7 +191,7 @@ export default function JobMatchPage() {
       <div className="section-header">
         <div>
           <h1 className="section-title">
-            <span className="gradient-text">Job Description Match</span>
+            Job Description Match
           </h1>
           <p className="section-subtitle">Paste a job description to see how well your resume matches</p>
         </div>
@@ -201,12 +201,12 @@ export default function JobMatchPage() {
       <div className="grid-2 mb-8">
         <div className="glass-card">
           <div className="flex items-center gap-3 mb-4">
-            <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'rgba(139, 92, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Clipboard size={18} style={{ color: 'var(--accent-violet)' }} />
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Clipboard size={18} style={{ color: 'var(--accent-primary)' }} />
             </div>
             <div>
               <h3 className="font-semibold">Job Description</h3>
-              <p className="text-xs text-tertiary">Paste the full job posting</p>
+              <p className="text-xs text-muted">Paste the full job posting</p>
             </div>
           </div>
           <textarea
@@ -217,23 +217,23 @@ export default function JobMatchPage() {
             onChange={(e) => setJobText(e.target.value)}
             style={{ minHeight: 220, resize: 'vertical' }}
           />
-          <p className="text-xs text-tertiary mt-2">{jobText.split(/\s+/).filter(Boolean).length} words</p>
+          <p className="text-xs text-muted mt-2">{jobText.split(/\s+/).filter(Boolean).length} words</p>
         </div>
 
         <div className="glass-card">
           <div className="flex items-center gap-3 mb-4">
-            <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Briefcase size={18} style={{ color: 'var(--accent-blue)' }} />
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Briefcase size={18} style={{ color: 'var(--accent-primary)' }} />
             </div>
             <div>
               <h3 className="font-semibold">Select Resume</h3>
-              <p className="text-xs text-tertiary">Choose which resume to match</p>
+              <p className="text-xs text-muted">Choose which resume to match</p>
             </div>
           </div>
 
           {resumes.length === 0 ? (
             <div className="empty-state" style={{ padding: '40px 20px' }}>
-              <p className="text-sm text-tertiary mb-4">No resumes found</p>
+              <p className="text-sm text-muted mb-4">No resumes found</p>
               <button className="btn btn-primary" onClick={() => setPage('builder')}>
                 Create Resume <ArrowRight size={16} />
               </button>
@@ -247,14 +247,14 @@ export default function JobMatchPage() {
                   className="glass-card"
                   style={{
                     cursor: 'pointer',
-                    border: selectedResumeId === r.id ? '2px solid var(--accent-blue)' : '1px solid var(--glass-border)',
+                    border: selectedResumeId === r.id ? '2px solid var(--accent-primary)' : '1px solid var(--border-primary)',
                     padding: '12px 16px',
                     textAlign: 'left',
-                    background: selectedResumeId === r.id ? 'rgba(59,130,246,0.08)' : undefined,
+                    background: selectedResumeId === r.id ? 'var(--accent-subtle)' : undefined,
                   }}
                 >
                   <div className="font-semibold text-sm">{r.metadata.name}</div>
-                  <div className="text-xs text-tertiary mt-1">
+                  <div className="text-xs text-muted mt-1">
                     {r.personalInfo.fullName || 'Untitled'} · {r.metadata.template}
                   </div>
                 </button>
@@ -297,7 +297,7 @@ export default function JobMatchPage() {
                     <div key={item.label} className="flex items-center gap-4" style={{ minWidth: 250 }}>
                       <span className="text-sm text-secondary" style={{ width: 140 }}>{item.label}</span>
                       <div style={{
-                        flex: 1, height: 6, background: 'rgba(148,163,184,0.1)',
+                        flex: 1, height: 6, background: 'var(--bg-tertiary)',
                         borderRadius: 3, overflow: 'hidden', minWidth: 100,
                       }}>
                         <motion.div
@@ -318,19 +318,19 @@ export default function JobMatchPage() {
             <div className="grid-2 mb-6">
               <div className="glass-card">
                 <div className="flex items-center gap-3 mb-4">
-                  <TrendingUp size={20} style={{ color: 'var(--accent-amber)' }} />
+                  <TrendingUp size={20} style={{ color: 'var(--color-warning)' }} />
                   <h3 className="font-semibold">Interview Probability</h3>
                 </div>
                 <div className="flex items-center gap-6">
                   <div>
-                    <div className="text-xs text-tertiary mb-1">Current Resume</div>
+                    <div className="text-xs text-muted mb-1">Current Resume</div>
                     <div className="text-3xl font-black" style={{ color: getScoreColor(match.interviewProbabilityBefore) }}>
                       {match.interviewProbabilityBefore}%
                     </div>
                   </div>
-                  <ArrowRight size={24} style={{ color: 'var(--text-tertiary)' }} />
+                  <ArrowRight size={24} style={{ color: 'var(--text-muted)' }} />
                   <div>
-                    <div className="text-xs text-tertiary mb-1">After Optimization</div>
+                    <div className="text-xs text-muted mb-1">After Optimization</div>
                     <div className="text-3xl font-black" style={{ color: 'var(--accent-emerald)' }}>
                       {match.interviewProbabilityAfter}%
                     </div>
@@ -339,7 +339,7 @@ export default function JobMatchPage() {
               </div>
               <div className="glass-card">
                 <div className="flex items-center gap-3 mb-4">
-                  <Zap size={20} style={{ color: 'var(--accent-blue)' }} />
+                  <Zap size={20} style={{ color: 'var(--accent-primary)' }} />
                   <h3 className="font-semibold">Quick Optimize</h3>
                 </div>
                 <p className="text-sm text-secondary mb-4">
@@ -426,25 +426,24 @@ export default function JobMatchPage() {
               </div>
             </div>
 
-            {/* Extracted Keywords by Category */}
             <div className="grid-2 mt-6">
               {[
-                { title: 'Hard Skills', items: match.extractedKeywords.hardSkills, color: 'var(--accent-blue)' },
-                { title: 'Soft Skills', items: match.extractedKeywords.softSkills, color: 'var(--accent-violet)' },
-                { title: 'Tools', items: match.extractedKeywords.tools, color: 'var(--accent-cyan)' },
-                { title: 'Certifications', items: match.extractedKeywords.certifications, color: 'var(--accent-amber)' },
+                { title: 'Hard Skills', items: match.extractedKeywords.hardSkills, color: 'var(--color-info)' },
+                { title: 'Soft Skills', items: match.extractedKeywords.softSkills, color: 'var(--accent-primary)' },
+                { title: 'Tools', items: match.extractedKeywords.tools, color: 'var(--accent-primary)' },
+                { title: 'Certifications', items: match.extractedKeywords.certifications, color: 'var(--color-warning)' },
               ].map(cat => (
                 <div key={cat.title} className="glass-card">
                   <h4 className="font-semibold mb-3" style={{ color: cat.color }}>{cat.title}</h4>
                   <div className="flex flex-wrap gap-2">
                     {cat.items.length > 0 ? cat.items.map(k => (
                       <span key={k} className="badge" style={{
-                        background: `${cat.color}15`,
+                        background: 'var(--bg-tertiary)',
                         color: cat.color,
-                        borderColor: `${cat.color}30`,
+                        borderColor: 'var(--border-primary)',
                       }}>{k}</span>
                     )) : (
-                      <span className="text-xs text-tertiary">None detected</span>
+                      <span className="text-xs text-muted">None detected</span>
                     )}
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import {
-  FileText, Target, Briefcase, Mail, Plus, Upload, Search,
+  FileText, Target, Briefcase, Mail, Plus, Upload,
   MessageSquare, FileEdit, Sparkles, ArrowRight, Clock, Zap
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
@@ -20,19 +20,19 @@ export default function Dashboard() {
   const avgScore = 78; // placeholder — will use real ATS scores when available
 
   const stats = [
-    { label: 'Total Resumes', value: resumes.length, icon: <FileText size={22} />, color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
-    { label: 'Avg ATS Score', value: avgScore, icon: <Target size={22} />, color: '#10b981', bg: 'rgba(16,185,129,0.12)', suffix: '%' },
-    { label: 'Job Matches', value: jobDescriptions.length, icon: <Briefcase size={22} />, color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
-    { label: 'Cover Letters', value: coverLetters.length, icon: <Mail size={22} />, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+    { label: 'Total Resumes', value: resumes.length, icon: <FileText size={22} />, color: 'var(--accent-primary)', bg: 'var(--accent-subtle)' },
+    { label: 'Avg ATS Score', value: avgScore, icon: <Target size={22} />, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.1)', suffix: '%' },
+    { label: 'Job Matches', value: jobDescriptions.length, icon: <Briefcase size={22} />, color: 'var(--accent-primary)', bg: 'var(--accent-subtle)' },
+    { label: 'Cover Letters', value: coverLetters.length, icon: <Mail size={22} />, color: 'var(--accent-primary)', bg: 'var(--accent-subtle)' },
   ];
 
   const quickActions = [
-    { label: 'Create New Resume', desc: 'Start building an ATS-optimized resume', icon: <Plus size={22} />, page: 'builder' as const, gradient: 'var(--gradient-primary)' },
-    { label: 'Upload Resume', desc: 'Import and optimize an existing resume', icon: <Upload size={22} />, page: 'builder' as const, gradient: 'var(--gradient-cosmic)' },
-    { label: 'ATS Score Check', desc: 'Scan your resume for ATS compatibility', icon: <Target size={22} />, page: 'ats-checker' as const, gradient: 'var(--gradient-success)' },
-    { label: 'Match to Job', desc: 'Tailor your resume to a job description', icon: <Briefcase size={22} />, page: 'job-match' as const, gradient: 'var(--gradient-warning)' },
-    { label: 'Cover Letter', desc: 'Generate a professional cover letter', icon: <FileEdit size={22} />, page: 'cover-letter' as const, gradient: 'var(--gradient-danger)' },
-    { label: 'Career Coach', desc: 'Get AI-powered career advice', icon: <MessageSquare size={22} />, page: 'career-coach' as const, gradient: 'linear-gradient(135deg, #06b6d4, #3b82f6)' },
+    { label: 'Create New Resume', desc: 'Start building an ATS-optimized resume', icon: <Plus size={22} />, page: 'builder' as const, color: 'var(--accent-primary)' },
+    { label: 'Upload Resume', desc: 'Import and optimize an existing resume', icon: <Upload size={22} />, page: 'builder' as const, color: 'var(--accent-primary)' },
+    { label: 'ATS Score Check', desc: 'Scan your resume for ATS compatibility', icon: <Target size={22} />, page: 'ats-checker' as const, color: 'var(--accent-primary)' },
+    { label: 'Match to Job', desc: 'Tailor your resume to a job description', icon: <Briefcase size={22} />, page: 'job-match' as const, color: 'var(--accent-primary)' },
+    { label: 'Cover Letter', desc: 'Generate a professional cover letter', icon: <FileEdit size={22} />, page: 'cover-letter' as const, color: 'var(--accent-primary)' },
+    { label: 'Career Coach', desc: 'Get AI-powered career advice', icon: <MessageSquare size={22} />, page: 'career-coach' as const, color: 'var(--accent-primary)' },
   ];
 
   const handleNewResume = () => {
@@ -45,9 +45,9 @@ export default function Dashboard() {
       {/* Welcome */}
       <motion.div {...fadeInUp} transition={{ delay: 0.1 }} style={{ marginBottom: '2rem' }}>
         <div className="flex items-center gap-3 mb-2">
-          <Sparkles size={28} style={{ color: 'var(--accent-blue)' }} />
+          <Sparkles size={28} style={{ color: 'var(--accent-primary)' }} />
           <h1 className="text-4xl font-black">
-            <span className="gradient-text">Welcome back</span>
+            Welcome back
           </h1>
         </div>
         <p className="text-secondary text-lg" style={{ maxWidth: 600 }}>
@@ -82,7 +82,7 @@ export default function Dashboard() {
           {quickActions.map((action, i) => (
             <motion.button
               key={action.label}
-              className="glass-card glass-card-glow"
+              className="glass-card"
               style={{ textAlign: 'left', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
               whileHover={{ scale: 1.02, y: -4 }}
               whileTap={{ scale: 0.98 }}
@@ -100,19 +100,19 @@ export default function Dashboard() {
               <div
                 style={{
                   position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-                  background: action.gradient, borderRadius: '14px 14px 0 0',
+                  background: 'var(--accent-primary)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
                 }}
               />
               <div className="flex items-center gap-4">
                 <div style={{
                   width: 44, height: 44, borderRadius: 'var(--radius-md)',
-                  background: action.gradient, opacity: 0.15, position: 'absolute',
+                  background: 'var(--accent-subtle)', position: 'absolute',
                   top: 24, left: 24,
                 }} />
                 <div style={{
                   width: 44, height: 44, borderRadius: 'var(--radius-md)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--text-primary)', position: 'relative', zIndex: 1,
+                  color: 'var(--accent-primary)', position: 'relative', zIndex: 1,
                 }}>
                   {action.icon}
                 </div>
@@ -120,7 +120,7 @@ export default function Dashboard() {
                   <h3 className="font-semibold" style={{ fontSize: '0.95rem' }}>{action.label}</h3>
                   <p className="text-xs text-tertiary mt-1">{action.desc}</p>
                 </div>
-                <ArrowRight size={16} style={{ color: 'var(--text-tertiary)' }} />
+                <ArrowRight size={16} style={{ color: 'var(--text-muted)' }} />
               </div>
             </motion.button>
           ))}
@@ -167,25 +167,25 @@ export default function Dashboard() {
                 <div className="flex items-center gap-4">
                   <div style={{
                     width: 44, height: 44, borderRadius: 'var(--radius-md)',
-                    background: 'rgba(59,130,246,0.1)', display: 'flex',
+                    background: 'var(--bg-tertiary)', display: 'flex',
                     alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--accent-blue)',
+                    color: 'var(--accent-primary)',
                   }}>
                     <FileText size={20} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <h3 className="font-semibold text-sm">{resume.metadata.name}</h3>
-                    <p className="text-xs text-tertiary mt-1">
+                    <p className="text-xs text-muted mt-1">
                       {resume.personalInfo.fullName || 'Untitled'} · {resume.metadata.template} template
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="badge badge-blue">{resume.metadata.template}</span>
-                    <div className="flex items-center gap-1 text-xs text-tertiary">
+                    <span className="badge badge-amber">{resume.metadata.template}</span>
+                    <div className="flex items-center gap-1 text-xs text-muted">
                       <Clock size={12} />
                       {new Date(resume.metadata.updatedAt).toLocaleDateString()}
                     </div>
-                    <ArrowRight size={16} style={{ color: 'var(--text-tertiary)' }} />
+                    <ArrowRight size={16} style={{ color: 'var(--text-muted)' }} />
                   </div>
                 </div>
               </motion.div>

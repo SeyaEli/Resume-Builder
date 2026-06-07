@@ -9,9 +9,9 @@ import { analyzeResume } from '../services/atsScorer';
 import type { ATSAnalysis } from '../types/resume';
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'var(--accent-emerald)';
-  if (score >= 60) return 'var(--accent-amber)';
-  return 'var(--accent-rose)';
+  if (score >= 80) return 'var(--color-success)';
+  if (score >= 60) return 'var(--color-warning)';
+  return 'var(--color-danger)';
 }
 
 function getScoreLabel(score: number): string {
@@ -91,16 +91,16 @@ export default function ATSChecker() {
   const filteredIssues = analysis?.issues.filter(i => issueFilter === 'all' || i.type === issueFilter) || [];
 
   const issueIcon = (type: string) => {
-    if (type === 'error') return <AlertCircle size={16} style={{ color: 'var(--accent-rose)' }} />;
-    if (type === 'warning') return <AlertTriangle size={16} style={{ color: 'var(--accent-amber)' }} />;
-    return <Lightbulb size={16} style={{ color: 'var(--accent-blue)' }} />;
+    if (type === 'error') return <AlertCircle size={16} style={{ color: 'var(--color-danger)' }} />;
+    if (type === 'warning') return <AlertTriangle size={16} style={{ color: 'var(--color-warning)' }} />;
+    return <Lightbulb size={16} style={{ color: 'var(--color-info)' }} />;
   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
       <div className="section-header">
         <div>
-          <h1 className="section-title"><span className="gradient-text">ATS Resume Scanner</span></h1>
+          <h1 className="section-title">ATS Resume Scanner</h1>
           <p className="section-subtitle">Analyze your resume for ATS compatibility and get actionable fixes</p>
         </div>
       </div>
@@ -108,11 +108,11 @@ export default function ATSChecker() {
       {/* Resume Selector */}
       {!analysis && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card mb-8" style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center', padding: '3rem' }}>
-          <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-xl)', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--accent-blue)' }}>
+          <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-md)', background: 'var(--accent-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--accent-primary)' }}>
             <Target size={28} />
           </div>
           <h2 className="text-xl font-bold mb-2">Select a Resume to Scan</h2>
-          <p className="text-sm text-tertiary mb-6">Choose from your saved resumes to run an ATS analysis</p>
+          <p className="text-sm text-muted mb-6">Choose from your saved resumes to run an ATS analysis</p>
 
           <select className="input-field mb-4" value={selectedId} onChange={e => setSelectedId(e.target.value)} style={{ textAlign: 'left' }}>
             <option value="">Select a resume...</option>
@@ -156,14 +156,14 @@ export default function ATSChecker() {
               <ScoreRing score={analysis.score.overall} size={180} />
               <div className="mt-6 flex items-center justify-center gap-8">
                 <div>
-                  <div className="text-xs text-tertiary">Interview Probability</div>
+                  <div className="text-xs text-muted">Interview Probability</div>
                   <div className="text-2xl font-black" style={{ color: getScoreColor(analysis.interviewProbability) }}>
                     {analysis.interviewProbability}%
                   </div>
                 </div>
-                <div style={{ width: 1, height: 40, background: 'var(--glass-border)' }} />
+                <div style={{ width: 1, height: 40, background: 'var(--border-primary)' }} />
                 <div>
-                  <div className="text-xs text-tertiary">Quantified Achievements</div>
+                  <div className="text-xs text-muted">Quantified Achievements</div>
                   <div className="text-2xl font-black text-accent">
                     {analysis.quantifiedAchievements}/{analysis.totalBullets}
                   </div>
@@ -181,11 +181,11 @@ export default function ATSChecker() {
                       <div style={{ color: getScoreColor(score) }}>{cat.icon}</div>
                       <div>
                         <div className="text-sm font-semibold">{cat.label}</div>
-                        <div className="text-xs text-tertiary">{cat.desc}</div>
+                        <div className="text-xs text-muted">{cat.desc}</div>
                       </div>
                       <span className="text-lg font-black" style={{ marginLeft: 'auto', color: getScoreColor(score) }}>{score}</span>
                     </div>
-                    <div style={{ height: 6, background: 'rgba(148,163,184,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: 6, background: 'var(--bg-tertiary)', borderRadius: 3, overflow: 'hidden' }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${score}%` }}
@@ -268,17 +268,17 @@ export default function ATSChecker() {
                         </div>
                       )}
                     </div>
-                    <span className="badge badge-rose" style={{ flexShrink: 0 }}>Impact: {issue.impact}/10</span>
+                    <span className="badge badge-amber" style={{ flexShrink: 0 }}>Impact: {issue.impact}/10</span>
                   </motion.div>
                 ))}
-                {filteredIssues.length === 0 && <p className="text-sm text-tertiary text-center p-6">No issues in this category 🎉</p>}
+                {filteredIssues.length === 0 && <p className="text-sm text-muted text-center p-6">No issues in this category 🎉</p>}
               </div>
             </div>
 
             {/* One-Click Fix */}
             <div className="glass-card" style={{ textAlign: 'center', padding: '2rem' }}>
               <h3 className="font-semibold mb-2">Ready to improve your score?</h3>
-              <p className="text-sm text-tertiary mb-4">Go to the Resume Builder to address the issues above</p>
+              <p className="text-sm text-muted mb-4">Go to the Resume Builder to address the issues above</p>
               <div className="flex justify-center gap-3">
                 <button className="btn btn-primary btn-lg" onClick={() => setPage('builder')}>
                   <Zap size={18} /> Fix Issues in Builder

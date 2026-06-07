@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Send, Sparkles, User, Bot } from 'lucide-react';
+import { Send, Sparkles, Bot } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { createId } from '../types/resume';
 import type { ChatMessage } from '../types/resume';
@@ -91,7 +91,7 @@ export default function CareerCoach() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
       <div className="section-header">
         <div>
-          <h1 className="section-title"><span className="gradient-text">AI Career Coach</span></h1>
+          <h1 className="section-title">AI Career Coach</h1>
           <p className="section-subtitle">Get personalized career advice, interview prep, and guidance</p>
         </div>
       </div>
@@ -102,11 +102,11 @@ export default function CareerCoach() {
           <div className="chat-messages">
             {chatMessages.length === 0 && (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-xl)', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-                  <Bot size={28} style={{ color: 'white' }} />
+                <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-md)', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                  <Bot size={28} style={{ color: 'var(--bg-primary)' }} />
                 </div>
                 <h3 className="font-bold mb-2">Hi! I'm your AI Career Coach</h3>
-                <p className="text-sm text-tertiary mb-6">Ask me anything about resumes, interviews, salary, or career planning</p>
+                <p className="text-sm text-muted mb-6">Ask me anything about resumes, interviews, salary, or career planning</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {quickPrompts.map(p => (
                     <button key={p} className="btn btn-ghost btn-sm" onClick={() => { setInput(p); }}>
@@ -127,7 +127,7 @@ export default function CareerCoach() {
               >
                 <div className="flex items-start gap-2">
                   {msg.role === 'assistant' && (
-                    <Sparkles size={14} style={{ color: 'var(--accent-blue)', flexShrink: 0, marginTop: 3 }} />
+                    <Sparkles size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: 3 }} />
                   )}
                   <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
                 </div>
@@ -138,7 +138,7 @@ export default function CareerCoach() {
               <div className="chat-message assistant">
                 <div className="flex items-center gap-2">
                   <div className="spinner" style={{ width: 14, height: 14 }} />
-                  <span className="text-sm text-tertiary">Thinking...</span>
+                  <span className="text-sm text-muted">Thinking...</span>
                 </div>
               </div>
             )}
