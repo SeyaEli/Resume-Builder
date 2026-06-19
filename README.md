@@ -1,3 +1,44 @@
+# ResumeAI Pro — ATS Resume Platform
+
+## Playwright E2E Tests
+
+### Install Playwright (first time)
+```bash
+npx playwright install
+```
+
+### Run all tests (headless)
+```bash
+npx playwright test
+```
+
+### Run tests in headed mode
+```bash
+npx playwright test --headed
+```
+
+### Run tests in interactive UI mode
+```bash
+npx playwright test --ui
+```
+
+### Open HTML report after a run
+```bash
+npx playwright show-report
+```
+
+### Run a single test file
+```bash
+npx playwright test tests/example.spec.ts
+```
+
+### Run tests matching a title
+```bash
+npx playwright test -g "Resume Builder"
+```
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

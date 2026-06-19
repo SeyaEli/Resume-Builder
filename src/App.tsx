@@ -98,7 +98,7 @@ export default function App() {
               onClick={() => setPage(item.page)}
             >
               <span className="sidebar-item-icon">{item.icon}</span>
-              {item.label}
+              <span className="sidebar-item-text">{item.label}</span>
               {item.badge && <span className="sidebar-badge">{item.badge}</span>}
             </button>
           ))}
@@ -111,7 +111,7 @@ export default function App() {
               onClick={() => setPage(item.page)}
             >
               <span className="sidebar-item-icon">{item.icon}</span>
-              {item.label}
+              <span className="sidebar-item-text">{item.label}</span>
               {item.badge && <span className="sidebar-badge">{item.badge}</span>}
             </button>
           ))}
@@ -122,7 +122,7 @@ export default function App() {
             onClick={() => setPage('settings')}
           >
             <span className="sidebar-item-icon"><Settings size={20} /></span>
-            Settings
+            <span className="sidebar-item-text">Settings</span>
           </button>
         </nav>
 
@@ -138,22 +138,27 @@ export default function App() {
         </div>
       </aside>
 
+      {/* Mobile sidebar overlay */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+        onClick={toggleSidebar}
+      />
+
       {/* Main Content */}
       <main className="app-main">
         {/* Header */}
         <header className="app-header">
           <button
-            className="btn btn-icon btn-ghost"
+            className="btn btn-icon btn-ghost mobile-menu-btn"
             onClick={toggleSidebar}
-            style={{ marginRight: '1rem', display: 'none' }}
-            id="mobile-menu-btn"
+            aria-label="Toggle menu"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <h2 className="header-title">{PAGE_TITLES[currentPage]}</h2>
           <div className="header-actions">
             <button className="btn btn-primary btn-sm" onClick={() => setPage('builder')}>
-              <FileText size={14} /> New Resume
+              <FileText size={14} /> <span className="hide-mobile">New Resume</span>
             </button>
           </div>
         </header>
@@ -199,25 +204,7 @@ export default function App() {
           ))}
         </AnimatePresence>
       </div>
-
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div
-          className="mobile-overlay"
-          onClick={toggleSidebar}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-            zIndex: 90, display: 'none',
-          }}
-        />
-      )}
-
-      <style>{`
-        @media (max-width: 768px) {
-          #mobile-menu-btn { display: flex !important; }
-          .mobile-overlay { display: block !important; }
-        }
-      `}</style>
     </div>
   );
 }
+

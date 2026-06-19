@@ -393,6 +393,133 @@ input, textarea, select { font-family: inherit; }
 }
 
 /* ============================================
+   Mobile Menu Button & Sidebar Overlay
+   ============================================ */
+
+.mobile-menu-btn {
+  display: none;
+  margin-right: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 150;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-base), visibility var(--transition-base);
+  pointer-events: none;
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@media (min-width: 769px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+.sidebar-item-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   Section Header
+   ============================================ */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+}
+
+.section-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-8);
+}
+
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
+  background: var(--accent-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  margin: 0 auto var(--space-4);
+}
+
+.empty-state-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-desc {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-6);
+}
+
+/* ============================================
+   Toast Container
+   ============================================ */
+
+.toast-container {
+  position: fixed;
+  top: var(--space-6);
+  right: var(--space-6);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 280px;
+  pointer-events: auto;
+}
+
+/* ============================================
    Enterprise Card Component
    ============================================ */
 
@@ -1170,20 +1297,607 @@ textarea.input-field {
 }
 
 /* ============================================
-   Responsive
+   Resume Builder Split Layout
+   ============================================ */
+
+.builder-split {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.builder-preview-panel {
+  position: sticky;
+  top: calc(var(--header-height) + 2rem);
+}
+
+@media (max-width: 1024px) {
+  .builder-split {
+    flex-direction: column;
+  }
+  .builder-split > div {
+    flex: 1 1 100% !important;
+    width: 100%;
+  }
+  .builder-preview-panel {
+    position: static;
+  }
+}
+
+/* ============================================
+   Template Card Icon
+   ============================================ */
+
+.template-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-3);
+}
+
+.template-card-name {
+  font-weight: 600;
+}
+
+.template-card-desc {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* ============================================
+   Issue Card Sub-elements
+   ============================================ */
+
+.issue-card-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.issue-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.issue-card-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.issue-card-desc {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-2);
+}
+
+.issue-card-fix {
+  margin-top: var(--space-2);
+}
+
+
+/* ============================================
+   Responsive - Desktop Large (≤1280px)
+   ============================================ */
+
+@media (max-width: 1280px) {
+  :root {
+    --content-max-width: 1100px;
+  }
+  .grid-4 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ============================================
+   Responsive - Desktop Small / Tablet Landscape (≤1024px)
    ============================================ */
 
 @media (max-width: 1024px) {
+  :root {
+    --content-max-width: 900px;
+    --sidebar-width: 220px;
+  }
+
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
+
+  /* Sidebar compact */
+  .sidebar-logo-text { font-size: var(--text-sm); }
+  .sidebar-item { font-size: var(--text-xs); padding: var(--space-2) var(--space-3); }
+  .sidebar-section-label { font-size: 10px; }
+
+  /* Resume builder split view stacks */
+  .builder-split {
+    flex-direction: column !important;
+  }
+  .builder-split > div {
+    flex: 1 1 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* Resume preview scales down */
+  .resume-preview {
+    padding: 32px 36px;
+    font-size: 10px;
+    min-height: 600px;
+  }
+  .resume-preview h1 { font-size: 18px; }
+  .resume-preview h2 { font-size: 11px; }
+
+  /* Score ring smaller */
+  .score-ring-value { font-size: var(--text-2xl); }
+
+  /* Tabs scrollable */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-item { flex-shrink: 0; font-size: var(--text-xs); padding: var(--space-2) var(--space-3); }
 }
 
+/* ============================================
+   Responsive - Tablet Portrait (≤768px)
+   ============================================ */
+
 @media (max-width: 768px) {
-  :root { --sidebar-width: 0px; }
-  .app-sidebar { transform: translateX(-100%); width: 280px; }
-  .app-sidebar.mobile-open { transform: translateX(0); }
-  .app-main { margin-left: 0; }
-  .app-content { padding: var(--space-4); }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  :root {
+    --sidebar-width: 0px;
+    --header-height: 56px;
+  }
+
+  /* -- Sidebar becomes slide-out overlay -- */
+  .app-sidebar {
+    transform: translateX(-100%);
+    width: 280px;
+    z-index: 200;
+    box-shadow: var(--shadow-xl);
+  }
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+  .app-content {
+    padding: var(--space-4);
+  }
+
+  .app-header {
+    padding: 0 var(--space-4);
+  }
+
+  .header-title {
+    font-size: var(--text-base);
+  }
+
+  /* -- All grids collapse to single column -- */
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  .grid-auto {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  /* -- Section headers stack -- */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .section-title { font-size: var(--text-xl); }
+  .section-subtitle { font-size: var(--text-xs); }
+
+  /* -- Stats cards compact -- */
+  .stat-card {
+    padding: var(--space-4);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  .stat-card-value {
+    font-size: var(--text-2xl);
+  }
+  .stat-card-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* -- Glass cards reduce padding -- */
+  .glass-card {
+    padding: var(--space-4);
+  }
+
+  /* -- Resume preview responsive -- */
+  .resume-preview {
+    padding: 24px 20px;
+    font-size: 9px;
+    min-height: 500px;
+  }
+  .resume-preview h1 { font-size: 16px; }
+  .resume-preview h2 { font-size: 10px; margin-top: 12px; }
+  .resume-preview .exp-header { flex-direction: column; gap: 2px; }
+  .resume-preview .exp-date { text-align: left; }
+  .resume-preview ul { padding-left: 12px; }
+  .resume-preview .skills-grid { gap: 2px 6px; }
+
+  /* -- Progress steps wrap -- */
+  .progress-steps {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
   .progress-step-line { display: none; }
+  .progress-step-label { display: none; }
+
+  /* -- Chat adjustments -- */
+  .chat-container {
+    height: calc(100vh - 180px);
+    max-height: none;
+  }
+  .chat-message {
+    max-width: 90%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-xs);
+  }
+  .chat-messages {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+  .chat-input-area {
+    padding: var(--space-3);
+  }
+
+  /* -- Buttons -- */
+  .btn-lg {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-sm);
+  }
+  .btn {
+    font-size: var(--text-xs);
+  }
+
+  /* -- Upload zone -- */
+  .upload-zone {
+    padding: var(--space-8) var(--space-4);
+  }
+  .upload-zone-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* -- Modal -- */
+  .modal-overlay {
+    padding: var(--space-4);
+    align-items: flex-end;
+  }
+  .modal-content {
+    padding: var(--space-5);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 85vh;
+  }
+
+  /* -- Template cards in 2-column grid -- */
+  .template-card {
+    padding: var(--space-3);
+  }
+  .template-card-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto var(--space-2);
+  }
+  .template-card-name { font-size: var(--text-xs); }
+  .template-card-desc { font-size: 10px; }
+
+  /* -- Issue cards stack -- */
+  .issue-card {
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+  }
+  .issue-card .badge {
+    align-self: flex-start;
+  }
+
+  /* -- Keyword tags smaller -- */
+  .keyword-tag {
+    font-size: 10px;
+    padding: 2px var(--space-2);
+  }
+
+  /* -- Toast notifications -- */
+  .toast-container {
+    left: var(--space-4);
+    right: var(--space-4);
+    top: auto;
+    bottom: var(--space-4);
+  }
+  .toast {
+    min-width: auto;
+    width: 100%;
+  }
+
+  /* -- Score rings scale -- */
+  .score-ring-value { font-size: var(--text-xl); }
+
+  /* -- Typography scaling -- */
+  .text-5xl { font-size: var(--text-3xl); }
+  .text-4xl { font-size: var(--text-2xl); }
+  .text-3xl { font-size: var(--text-xl); }
+
+  /* -- Flex helpers for mobile stacking -- */
+  .flex.items-center {
+    flex-wrap: wrap;
+  }
+
+  /* -- Input groups full width -- */
+  .input-group { width: 100%; }
+  .input-field { font-size: 16px; /* Prevents iOS zoom on focus */ }
+
+  /* -- Utility: hide on mobile -- */
+  .hide-mobile { display: none !important; }
 }
+
+/* ============================================
+   Responsive - Small Phone (≤480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+  :root {
+    --header-height: 48px;
+  }
+
+  .app-content {
+    padding: var(--space-3);
+  }
+
+  .app-header {
+    padding: 0 var(--space-3);
+  }
+
+  .header-title { font-size: var(--text-sm); }
+  .header-subtitle { display: none; }
+
+  /* Header actions compact */
+  .header-actions .btn span,
+  .header-actions .btn-sm {
+    font-size: 11px;
+    padding: var(--space-1) var(--space-3);
+  }
+
+  /* Stats: full width single column */
+  .stat-card {
+    padding: var(--space-3);
+  }
+  .stat-card-value { font-size: var(--text-xl); }
+
+  /* Cards even less padding */
+  .glass-card {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+  }
+
+  /* Section titles */
+  .section-title { font-size: var(--text-lg); }
+
+  /* Resume preview very compact */
+  .resume-preview {
+    padding: 16px 14px;
+    font-size: 8px;
+    min-height: 400px;
+  }
+  .resume-preview h1 { font-size: 14px; }
+  .resume-preview h2 { font-size: 9px; }
+
+  /* Tabs: scroll horizontally */
+  .tabs {
+    gap: 0;
+    padding: 2px;
+  }
+  .tab-item {
+    padding: var(--space-1) var(--space-2);
+    font-size: 10px;
+  }
+
+  /* Buttons compact */
+  .btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: 11px;
+    gap: var(--space-1);
+  }
+  .btn-lg {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-xs);
+  }
+
+  /* Badge compact */
+  .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  /* Score ring small */
+  .score-ring-value { font-size: var(--text-lg); }
+  .score-ring-text { font-size: 9px; }
+
+  /* Chat messages */
+  .chat-message {
+    max-width: 95%;
+    font-size: 12px;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    padding: var(--space-6) var(--space-3);
+  }
+  .upload-zone-icon { width: 40px; height: 40px; }
+  .upload-zone-title { font-size: var(--text-sm); }
+  .upload-zone-subtitle { font-size: 11px; }
+
+  /* Empty state */
+  .empty-state {
+    padding: var(--space-8) var(--space-4);
+  }
+  .empty-state-icon {
+    width: 56px;
+    height: 56px;
+  }
+  .empty-state-title { font-size: var(--text-base); }
+
+  /* Sidebar when open */
+  .app-sidebar {
+    width: 260px;
+  }
+
+  /* Template cards */
+  .template-card {
+    padding: var(--space-2);
+  }
+}
+
+/* ============================================
+   Responsive - Extra Small (≤360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+  .app-content {
+    padding: var(--space-2);
+  }
+
+  .glass-card {
+    padding: var(--space-2);
+  }
+
+  .section-title { font-size: var(--text-base); }
+
+  .btn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .resume-preview {
+    padding: 12px 10px;
+    font-size: 7.5px;
+    min-height: 350px;
+  }
+  .resume-preview h1 { font-size: 12px; }
+  .resume-preview h2 { font-size: 8px; }
+
+  .stat-card-value { font-size: var(--text-lg); }
+  .stat-card-label { font-size: var(--text-xs); }
+
+  .app-sidebar { width: 240px; }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .app-sidebar,
+  .app-header,
+  .no-print,
+  .toast-container {
+    display: none !important;
+  }
+
+  .app-main {
+    margin: 0;
+  }
+
+  .resume-preview {
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+  }
+}
+
+/* ============================================
+   Touch Device Optimizations
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  .sidebar-item {
+    min-height: 44px;
+  }
+  .btn {
+    min-height: 40px;
+  }
+  .btn-sm {
+    min-height: 36px;
+  }
+  .tab-item {
+    min-height: 36px;
+  }
+  .template-card {
+    min-height: 60px;
+  }
+
+  /* Remove hover effects on touch */
+  .stat-card:hover {
+    transform: none;
+  }
+  .glass-card:hover {
+    border-color: var(--border-primary);
+    box-shadow: var(--shadow-sm);
+  }
+  .template-card:hover {
+    transform: none;
+  }
+  .btn-primary:hover {
+    transform: none;
+  }
+
+  /* Add active state instead */
+  .sidebar-item:active {
+    background: var(--accent-subtle);
+  }
+  .btn:active {
+    opacity: 0.8;
+    transform: scale(0.97);
+  }
+  .glass-card:active {
+    border-color: var(--border-secondary);
+  }
+}
+
+/* ============================================
+   Landscape phone orientation
+   ============================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .app-header {
+    height: 44px;
+  }
+  .app-content {
+    padding: var(--space-2) var(--space-4);
+  }
+  .chat-container {
+    height: calc(100vh - 120px);
+  }
+  .sidebar-logo {
+    min-height: 48px;
+    padding: var(--space-2) var(--space-4);
+  }
+  .sidebar-item {
+    padding: var(--space-1) var(--space-3);
+  }
+}
+

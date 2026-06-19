@@ -537,15 +537,17 @@ export default function ResumeBuilder() {
         )}
         {resume.certifications.map((cert, i) => (
           <div key={cert.id} className="glass-card" style={{ padding: '16px 20px' }}>
-            <div className="flex items-center gap-3">
-              <span className="badge badge-amber">{i + 1}</span>
-              <input className="input-field" placeholder="Certification Name" value={cert.name} style={{ flex: 1 }}
-                onChange={e => update({ certifications: resume.certifications.map(c => c.id === cert.id ? { ...c, name: e.target.value } : c) })} />
-              <input className="input-field" placeholder="Issuer" value={cert.issuer} style={{ width: 180 }}
-                onChange={e => update({ certifications: resume.certifications.map(c => c.id === cert.id ? { ...c, issuer: e.target.value } : c) })} />
-              <input className="input-field" type="month" value={cert.date} style={{ width: 160 }}
-                onChange={e => update({ certifications: resume.certifications.map(c => c.id === cert.id ? { ...c, date: e.target.value } : c) })} />
+            <div className="flex items-center justify-between mb-2">
+              <span className="badge badge-amber">Cert {i + 1}</span>
               <button className="btn btn-ghost btn-sm" onClick={() => update({ certifications: resume.certifications.filter(c => c.id !== cert.id) })} style={{ color: 'var(--accent-rose)' }}><Trash2 size={14} /></button>
+            </div>
+            <div className="grid-2" style={{ gap: 10 }}>
+              <div className="input-group"><label className="input-label">Name</label><input className="input-field" placeholder="Certification Name" value={cert.name}
+                onChange={e => update({ certifications: resume.certifications.map(c => c.id === cert.id ? { ...c, name: e.target.value } : c) })} /></div>
+              <div className="input-group"><label className="input-label">Issuer</label><input className="input-field" placeholder="Issuer" value={cert.issuer}
+                onChange={e => update({ certifications: resume.certifications.map(c => c.id === cert.id ? { ...c, issuer: e.target.value } : c) })} /></div>
+              <div className="input-group"><label className="input-label">Date</label><input className="input-field" type="month" value={cert.date}
+                onChange={e => update({ certifications: resume.certifications.map(c => c.id === cert.id ? { ...c, date: e.target.value } : c) })} /></div>
             </div>
           </div>
         ))}
@@ -637,7 +639,7 @@ export default function ResumeBuilder() {
       </div>
 
       {/* Main Content */}
-      <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+      <div className="builder-split" style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
         {/* Left: Form */}
         <div style={{ flex: '1 1 50%', minWidth: 0 }}>
           <div className="glass-card">
@@ -667,7 +669,7 @@ export default function ResumeBuilder() {
         </div>
 
         {/* Right: Live Preview */}
-        <div style={{ flex: '1 1 50%', minWidth: 0, position: 'sticky', top: 'calc(var(--header-height) + 2rem)' }}>
+        <div className="builder-preview-panel" style={{ flex: '1 1 50%', minWidth: 0 }}>
           <div style={{ marginBottom: 12 }}>
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-secondary">Live Preview</span>
