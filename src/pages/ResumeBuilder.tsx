@@ -3,12 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, FileText, Briefcase, GraduationCap, Wrench, FolderOpen,
   Award, Check, ChevronLeft, ChevronRight, Plus, Trash2, Sparkles,
-  Download, Target, Building2, Code2, Crown, Palette, Landmark, BookOpen, Languages
+  Download, Target, Loader2, Languages
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { createId, TEMPLATE_INFO } from '../types/resume';
 import type { Resume, Experience, Education, Skill, Project, Certification, Language, TemplateType } from '../types/resume';
 import { exportToPDF, exportToTXT } from '../services/exportService';
+import { runAi } from '../services/aiService';
+import ResumePreview from '../components/ResumePreview';
+import TemplateThumbnail from '../components/TemplateThumbnail';
+
+const TEMPLATE_KEYS = Object.keys(TEMPLATE_INFO) as TemplateType[];
 
 const STEPS = [
   { label: 'Personal', icon: <User size={16} /> },
@@ -22,123 +27,6 @@ const STEPS = [
   { label: 'Finalize', icon: <Check size={16} /> },
 ];
 
-const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
-  Building2: <Building2 size={22} />, Sparkles: <Sparkles size={22} />, Crown: <Crown size={22} />,
-  Code2: <Code2 size={22} />, GraduationCap: <GraduationCap size={22} />, Palette: <Palette size={22} />,
-  Landmark: <Landmark size={22} />, BookOpen: <BookOpen size={22} />,
-};
-
-function ResumePreview({ resume }: { resume: Resume }) {
-  const fmtDate = (d: string) => {
-    if (!d) return '';
-    const dt = new Date(d + '-01');
-    return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  };
-
-  return (
-    <div className="resume-preview" id="resume-preview-content">
-      <h1>{resume.personalInfo.fullName || 'Your Name'}</h1>
-      <div className="contact-line">
-        {[resume.personalInfo.email, resume.personalInfo.phone, resume.personalInfo.location, resume.personalInfo.linkedin, resume.personalInfo.portfolio].filter(Boolean).join(' | ')}
-      </div>
-
-      {resume.summary && (
-        <>
-          <h2>Professional Summary</h2>
-          <p>{resume.summary}</p>
-        </>
-      )}
-
-      {resume.skills.length > 0 && (
-        <>
-          <h2>Core Skills</h2>
-          <div className="skills-grid">
-            {resume.skills.map(s => (
-              <span key={s.id} className="skill-item">• {s.name}</span>
-            ))}
-          </div>
-        </>
-      )}
-
-      {resume.experience.length > 0 && (
-        <>
-          <h2>Professional Experience</h2>
-          {resume.experience.map(exp => (
-            <div key={exp.id} style={{ marginBottom: 12 }}>
-              <div className="exp-header">
-                <div>
-                  <span className="exp-title">{exp.jobTitle || 'Job Title'}</span>
-                  {' — '}
-                  <span className="exp-company">{exp.company || 'Company'}</span>
-                </div>
-                <span className="exp-date">
-                  {fmtDate(exp.startDate)} – {exp.current ? 'Present' : fmtDate(exp.endDate)}
-                </span>
-              </div>
-              {exp.bullets.length > 0 && (
-                <ul>
-                  {exp.bullets.map((b, i) => b.trim() && <li key={i}>{b}</li>)}
-                </ul>
-              )}
-            </div>
-          ))}
-        </>
-      )}
-
-      {resume.education.length > 0 && (
-        <>
-          <h2>Education</h2>
-          {resume.education.map(edu => (
-            <div key={edu.id} style={{ marginBottom: 8 }}>
-              <div className="exp-header">
-                <span className="exp-title">{edu.degree || 'Degree'}</span>
-                <span className="exp-date">{edu.year}</span>
-              </div>
-              <div className="exp-company">{edu.institution}{edu.gpa ? ` | GPA: ${edu.gpa}` : ''}</div>
-            </div>
-          ))}
-        </>
-      )}
-
-      {resume.projects.length > 0 && (
-        <>
-          <h2>Projects</h2>
-          {resume.projects.map(p => (
-            <div key={p.id} style={{ marginBottom: 8 }}>
-              <span className="exp-title">{p.name}</span>
-              {p.description && <p style={{ fontSize: 10, marginTop: 2 }}>{p.description}</p>}
-              {p.technologies.length > 0 && (
-                <p style={{ fontSize: 9, color: '#666', marginTop: 2 }}>Technologies: {p.technologies.join(', ')}</p>
-              )}
-            </div>
-          ))}
-        </>
-      )}
-
-      {resume.certifications.length > 0 && (
-        <>
-          <h2>Certifications</h2>
-          <ul>
-            {resume.certifications.map(c => (
-              <li key={c.id}>{c.name} — {c.issuer}</li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {resume.languages.length > 0 && (
-        <>
-          <h2>Languages</h2>
-          <div className="skills-grid">
-            {resume.languages.map(l => (
-              <span key={l.id} className="skill-item">• {l.name} ({l.proficiency})</span>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 function LanguagesStep({ resume, update }: { resume: Resume; update: (u: Partial<Resume>) => void }) {
   const [newLang, setNewLang] = useState('');
@@ -183,7 +71,7 @@ function LanguagesStep({ resume, update }: { resume: Resume; update: (u: Partial
                 <span className="text-sm font-semibold">{l.name}</span>
                 <select
                   className="input-field"
-                  style={{ width: 160, padding: '4px 8px', fontSize: '0.8rem' }}
+                  style={{ maxWidth: '100%', minWidth: 120, padding: '4px 8px', fontSize: '0.8rem' }}
                   value={l.proficiency}
                   onChange={e => update({ languages: resume.languages.map(lg => lg.id === l.id ? { ...lg, proficiency: e.target.value as Language['proficiency'] } : lg) })}
                 >
@@ -306,18 +194,25 @@ export default function ResumeBuilder() {
     </div>
   );
 
+  const [aiBusy, setAiBusy] = useState(false);
+
+  const handleAiSummary = async () => {
+    setAiBusy(true);
+    try {
+      const result = await runAi({ kind: 'summary', resume, input: resume.personalInfo.title || 'the role' });
+      update({ summary: result.text });
+      addToast('success', result.fallbackReason ? 'Summary written — note: your connected model failed, so the built-in engine answered.' : 'Summary written from your resume.');
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   const renderSummary = () => (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold">Professional Summary</h3>
-        <button className="btn btn-secondary btn-sm" onClick={() => {
-          const skills = resume.skills.slice(0, 4).map(s => s.name).join(', ') || 'relevant skills';
-          const years = resume.experience.length > 0 ? `${resume.experience.length * 2}+` : 'several';
-          const title = resume.personalInfo.title || 'professional';
-          const summary = `Results-driven ${title} with ${years} years of experience delivering high-impact solutions using ${skills}. Proven track record of leading cross-functional teams, driving operational efficiency, and exceeding business objectives. Passionate about leveraging technology and data-driven insights to solve complex challenges and create value.`;
-          update({ summary });
-        }}>
-          <Sparkles size={14} /> AI Generate
+        <button className="btn btn-secondary btn-sm" onClick={handleAiSummary} disabled={aiBusy}>
+          {aiBusy ? <><Loader2 size={14} className="spin" /> Writing...</> : <><Sparkles size={14} /> AI Generate</>}
         </button>
       </div>
       <textarea
@@ -327,7 +222,7 @@ export default function ResumeBuilder() {
         value={resume.summary}
         onChange={e => update({ summary: e.target.value })}
       />
-      <p className="text-xs text-tertiary">{resume.summary.split(/\s+/).filter(Boolean).length} words (recommended: 30-60)</p>
+      <p className="text-xs text-tertiary">{resume.summary.split(/\s+/).filter(Boolean).length} words (recommended: 30-60). AI Generate uses your own titles, skills and results.</p>
     </div>
   );
 
@@ -568,26 +463,33 @@ export default function ResumeBuilder() {
 
       {/* Template Grid */}
       <div>
-        <label className="input-label mb-3">ATS Template</label>
-        <div className="grid-4" style={{ gap: 12 }}>
-          {(Object.entries(TEMPLATE_INFO) as [TemplateType, typeof TEMPLATE_INFO[TemplateType]][]).map(([key, info]) => (
-            <button
-              key={key}
-              className={`template-card ${resume.metadata.template === key ? 'selected' : ''}`}
-              onClick={() => update({ metadata: { ...resume.metadata, template: key } })}
-              style={{ padding: '16px 12px' }}
-            >
-              <div className="template-card-icon" style={{
-                background: resume.metadata.template === key ? 'var(--accent-subtle)' : 'var(--bg-tertiary)',
-                color: resume.metadata.template === key ? 'var(--accent-primary)' : 'var(--text-muted)',
-              }}>
-                {TEMPLATE_ICONS[info.icon] || <FileText size={22} />}
-              </div>
-              <div className="template-card-name text-sm">{info.name}</div>
-              <div className="template-card-desc">{info.description}</div>
-            </button>
-          ))}
+        <label className="input-label mb-3">Resume Template ({TEMPLATE_KEYS.length} designs)</label>
+        <div className="template-picker">
+          {TEMPLATE_KEYS.map(key => {
+            const info = TEMPLATE_INFO[key];
+            const selected = resume.metadata.template === key;
+            return (
+              <button
+                key={key}
+                className={`template-card ${selected ? 'selected' : ''}`}
+                onClick={() => update({ metadata: { ...resume.metadata, template: key } })}
+                style={{ padding: '12px 10px' }}
+              >
+                <TemplateThumbnail layout={info.layout} accent={info.accent} width={86} height={112} />
+                <div className="template-card-name text-sm">{info.name}</div>
+                <div className="template-card-desc">{info.description}</div>
+                {selected && (
+                  <span className="badge badge-emerald" style={{ marginTop: 6 }}>
+                    <Check size={10} /> Selected
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
+        <p className="text-xs text-tertiary mt-3">
+          The template is applied to the live preview on the right, and to the PDF you export.
+        </p>
       </div>
 
       {/* Export */}
@@ -673,12 +575,23 @@ export default function ResumeBuilder() {
           <div style={{ marginBottom: 12 }}>
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-secondary">Live Preview</span>
-              <span className="badge badge-blue">{resume.metadata.template}</span>
+              <span className="badge badge-blue">{TEMPLATE_INFO[resume.metadata.template]?.name || 'Modern'}</span>
             </div>
           </div>
           <div style={{ maxHeight: 'calc(100vh - 160px)', overflow: 'auto', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-xl)' }}>
             <ResumePreview resume={resume} />
           </div>
+          {!TEMPLATE_INFO[resume.metadata.template]?.atsSafe && (
+            <p className="text-xs mt-3" style={{ color: 'var(--color-warning)' }}>
+              This template puts skills in a side rail. Looks great, but older ATS parsers can skip a rail — export the compact or corporate version for a strict employer.
+            </p>
+          )}
+          <p className="text-xs text-tertiary mt-3">
+            {resume.experience.flatMap(e => e.bullets).filter(b => b.trim() && /(\d|%|\$)/.test(b)).length}
+            {' of '}
+            {resume.experience.flatMap(e => e.bullets).filter(b => b.trim()).length}
+            {' experience bullets contain a measurable number.'}
+          </p>
         </div>
       </div>
     </motion.div>

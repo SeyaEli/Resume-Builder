@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link2, Copy, Check, Sparkles, User, Briefcase, Wrench, Search } from 'lucide-react';
+import { Link2, Copy, Check, Sparkles, User, Briefcase, Wrench, Search, Loader2, RefreshCw } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
+import { runAi, generateLinkedInHeadline } from '../services/aiService';
 
 export default function LinkedInOptimizer() {
   const { resumes, activeResumeId, setPage } = useResumeStore();
@@ -15,37 +16,33 @@ export default function LinkedInOptimizer() {
   const [expText, setExpText] = useState('');
   const [skills, setSkills] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
-
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!resume) return;
     setIsGenerating(true);
-    setTimeout(() => {
+    try {
       const title = resume.personalInfo.title || 'Professional';
-      const topSkills = resume.skills.slice(0, 5).map(s => s.name);
-      const company = resume.experience[0]?.company || '';
+      const topSkills = resume.skills.slice(0, 8).map(t => t.name);
+      const softSkills = resume.skills.filter(t => t.category === 'soft').slice(0, 3).map(t => t.name);
 
-      setHeadline(`${title}${company ? ` at ${company}` : ''} | ${topSkills.slice(0, 3).join(' • ')} | Driving Results Through Innovation`);
-
-      setAbout(`${resume.summary || `Experienced ${title} passionate about delivering impactful solutions.`}
-
-🔹 What I do: I specialize in ${topSkills.slice(0, 3).join(', ')}, helping organizations achieve their goals through technology and strategic thinking.
-
-🔹 What drives me: I'm passionate about continuous learning, mentoring teams, and building solutions that make a real difference. I thrive in collaborative environments where innovation meets execution.
-
-🔹 Key achievements:
-${resume.experience[0]?.bullets.slice(0, 3).map(b => `• ${b}`).join('\n') || '• Delivered impactful projects and driven measurable results'}
-
-📫 Let's connect! I'm always open to discussing new opportunities, collaborations, and industry insights.`);
+      const about = await runAi({ kind: 'linkedin-about', resume, input: title });
+      setHeadline(generateLinkedInHeadline(resume, title));
+      setAbout(about.text);
 
       setExpText(resume.experience.map(exp =>
-        `${exp.jobTitle} at ${exp.company}\n${exp.bullets.map(b => `• ${b}`).join('\n')}`
+        `${exp.jobTitle} at ${exp.company}\n${exp.bullets.filter(b => b.trim()).map(b => `- ${b}`).join('\n')}`
       ).join('\n\n'));
 
-      setSkills(resume.skills.map(s => s.name));
-      setKeywords([title, ...topSkills, 'Innovation', 'Strategy', 'Results-Driven', 'Team Leadership']);
+      setSkills(topSkills.length ? topSkills : ['Communilation']);
+      setKeywords([
+        title,
+        ...resume.skills.slice(0, 6).map(t => t.name),
+        ...softSkills,
+        ...resume.certifications.slice(0, 2).map(l => l.name),
+      ].filter((v, i, arr) => arr.indexOf(v) === i));
       setGenerated(true);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
   const copyText = (text: string, section: string) => {
@@ -70,17 +67,17 @@ ${resume.experience[0]?.bullets.slice(0, 3).map(b => `• ${b}`).join('\n') || '
       </div>
 
       {!generated ? (
-        <div className="glass-card" style={{ textAlign: 'center', padding: '3rem', maxWidth: 600, margin: '0 auto' }}>
+        <div className="glass-card center-card">
           <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-md)', background: 'var(--accent-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--accent-primary)' }}>
             <Link2 size={28} />
           </div>
           <h2 className="text-xl font-bold mb-2">Generate LinkedIn Content</h2>
-          <p className="text-sm text-muted mb-6">We'll create optimized Headline, About, Experience, and Skills sections based on your resume.</p>
+          <p className="text-sm text-muted mb-6">Build your Headline, About, Experience and Skills from the resume you wrote — no invented achievements.</p>
           {!resume ? (
             <button className="btn btn-primary btn-lg" onClick={() => setPage('builder')}>Create Resume First</button>
           ) : (
             <button className="btn btn-primary btn-lg" onClick={handleGenerate} disabled={isGenerating}>
-              {isGenerating ? <><div className="spinner" style={{ width: 18, height: 18 }} /> Generating...</> : <><Sparkles size={18} /> Generate LinkedIn Content</>}
+              {isGenerating ? <><Loader2 size={18} className="spin" /> Generating...</> : <><Sparkles size={18} /> Generate LinkedIn Content</>}
             </button>
           )}
         </div>
@@ -121,7 +118,7 @@ ${resume.experience[0]?.bullets.slice(0, 3).map(b => `• ${b}`).join('\n') || '
               <CopyBtn text={skills.join(', ')} section="skills" />
             </div>
             <div className="flex flex-wrap gap-2">
-              {skills.map(s => <span key={s} className="badge badge-amber">{s}</span>)}
+              {skills.map(t => <span key={t} className="badge badge-amber">{t}</span>)}
             </div>
           </motion.div>
 
@@ -137,7 +134,7 @@ ${resume.experience[0]?.bullets.slice(0, 3).map(b => `• ${b}`).join('\n') || '
           </motion.div>
 
           <button className="btn btn-ghost" onClick={() => { setGenerated(false); }}>
-            ← Regenerate
+            <RefreshCw size={16} /> Regenerate
           </button>
         </div>
       )}

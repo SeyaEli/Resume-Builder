@@ -1,12 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" data-palette="amber">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#262524" />
     <title>ResumeAI Pro — ATS Resume Optimizer & Builder</title>
     <meta name="description" content="Create professional, ATS-compliant resumes with AI-powered optimization. Get higher ATS scores, better keyword matching, and land more interviews." />
     <meta name="keywords" content="ATS resume, resume builder, resume optimizer, ATS checker, cover letter generator, job match, career coach" />
+    <script>
+      /* Paint the saved mode and palette before the app loads, so switching
+         between light and dark never flashes the wrong colour on startup. */
+      (function () {
+        try {
+          var saved = JSON.parse(localStorage.getItem('ats-resume-platform') || '{}');
+          var prefs = (saved && saved.state && saved.state.preferences) || {};
+          var mode = prefs.theme || 'dark';
+          if (mode === 'system') {
+            mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          var root = document.documentElement;
+          root.setAttribute('data-theme', mode);
+          root.setAttribute('data-palette', prefs.palette || 'amber');
+          root.style.colorScheme = mode;
+        } catch (e) {
+          /* First visit or unreadable storage: the defaults in the markup stand. */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

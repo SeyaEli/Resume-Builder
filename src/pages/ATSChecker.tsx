@@ -107,7 +107,7 @@ export default function ATSChecker() {
 
       {/* Resume Selector */}
       {!analysis && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card mb-8" style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center', padding: '3rem' }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card mb-8 center-card">
           <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-md)', background: 'var(--accent-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--accent-primary)' }}>
             <Target size={28} />
           </div>
@@ -141,7 +141,7 @@ export default function ATSChecker() {
             {/* Re-analyze */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <select className="input-field" value={selectedId} onChange={e => setSelectedId(e.target.value)} style={{ width: 260 }}>
+                <select className="input-field select-compact" value={selectedId} onChange={e => setSelectedId(e.target.value)}>
                   {resumes.map(r => <option key={r.id} value={r.id}>{r.metadata.name}</option>)}
                 </select>
                 <button className="btn btn-secondary btn-sm" onClick={handleAnalyze} disabled={isAnalyzing}>
@@ -151,10 +151,10 @@ export default function ATSChecker() {
             </div>
 
             {/* Overall Score */}
-            <div className="glass-card mb-6" style={{ textAlign: 'center', padding: '2.5rem' }}>
+            <div className="glass-card mb-6 center-card">
               <h2 className="text-xl font-bold mb-6">ATS Compatibility Score</h2>
               <ScoreRing score={analysis.score.overall} size={180} />
-              <div className="mt-6 flex items-center justify-center gap-8">
+              <div className="mt-6 flex items-center justify-center gap-8 stats-row">
                 <div>
                   <div className="text-xs text-muted">Interview Probability</div>
                   <div className="text-2xl font-black" style={{ color: getScoreColor(analysis.interviewProbability) }}>

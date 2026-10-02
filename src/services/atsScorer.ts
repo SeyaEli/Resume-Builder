@@ -1,7 +1,7 @@
 import type { Resume, ATSScore, ATSIssue, ATSAnalysis } from '../types/resume';
 import { createId } from '../types/resume';
 
-const ACTION_VERBS = [
+export const ACTION_VERBS = [
   'achieved', 'administered', 'analyzed', 'architected', 'automated', 'built',
   'collaborated', 'consolidated', 'coordinated', 'created', 'decreased', 'delivered',
   'designed', 'developed', 'directed', 'drove', 'eliminated', 'enabled', 'engineered',
@@ -16,7 +16,7 @@ const ACTION_VERBS = [
   'supervised', 'surpassed', 'transformed', 'unified', 'upgraded',
 ];
 
-const WEAK_WORDS = [
+export const WEAK_WORDS = [
   'helped', 'worked on', 'was responsible for', 'assisted', 'participated',
   'was involved in', 'handled', 'did', 'made', 'got', 'went',
 ];

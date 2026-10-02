@@ -4,6 +4,8 @@ import {
   MessageSquare, FileEdit, Sparkles, ArrowRight, Clock, Zap
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
+import { analyzeResume } from '../services/atsScorer';
+import { TEMPLATE_INFO } from '../types/resume';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 24 },
@@ -17,11 +19,14 @@ const stagger = {
 export default function Dashboard() {
   const { resumes, coverLetters, jobDescriptions, setPage, createResume, setActiveResume } = useResumeStore();
 
-  const avgScore = 78; // placeholder — will use real ATS scores when available
+  // The average is computed from the same checks the ATS Checker runs, so the
+  // two screens never disagree.
+  const scores = resumes.map(r => analyzeResume(r).score.overall);
+  const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
   const stats = [
     { label: 'Total Resumes', value: resumes.length, icon: <FileText size={22} />, color: 'var(--accent-primary)', bg: 'var(--accent-subtle)' },
-    { label: 'Avg ATS Score', value: avgScore, icon: <Target size={22} />, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.1)', suffix: '%' },
+    { label: 'Avg ATS Score', value: resumes.length ? avgScore : '—', icon: <Target size={22} />, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.1)', suffix: resumes.length ? '%' : '' },
     { label: 'Job Matches', value: jobDescriptions.length, icon: <Briefcase size={22} />, color: 'var(--accent-primary)', bg: 'var(--accent-subtle)' },
     { label: 'Cover Letters', value: coverLetters.length, icon: <Mail size={22} />, color: 'var(--accent-primary)', bg: 'var(--accent-subtle)' },
   ];
@@ -176,11 +181,14 @@ export default function Dashboard() {
                   <div style={{ flex: 1 }}>
                     <h3 className="font-semibold text-sm">{resume.metadata.name}</h3>
                     <p className="text-xs text-muted mt-1">
-                      {resume.personalInfo.fullName || 'Untitled'} · {resume.metadata.template} template
+                      {resume.personalInfo.fullName || 'Untitled'} · {TEMPLATE_INFO[resume.metadata.template]?.name || 'Modern'} template
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="badge badge-amber">{resume.metadata.template}</span>
+                    <span className="badge badge-amber">{TEMPLATE_INFO[resume.metadata.template]?.name || 'Modern'}</span>
+                    <span className="badge badge-emerald" title="Live ATS score">
+                      <Target size={10} /> {analyzeResume(resume).score.overall}/100
+                    </span>
                     <div className="flex items-center gap-1 text-xs text-muted">
                       <Clock size={12} />
                       {new Date(resume.metadata.updatedAt).toLocaleDateString()}

@@ -5,7 +5,9 @@ import {
   ArrowRight, Sparkles, Clipboard, Zap
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
-import type { JobMatch, ExtractedKeywords } from '../types/resume';
+import type { JobMatch, JobDescription } from '../types/resume';
+import { createId } from '../types/resume';
+import { computeJobMatch, guessJobMeta } from '../services/aiEngine';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -17,112 +19,6 @@ const stagger = {
   animate: { transition: { staggerChildren: 0.06 } },
 };
 
-// Client-side keyword extraction
-function extractKeywordsFromText(text: string): ExtractedKeywords {
-  const lower = text.toLowerCase();
-
-  const hardSkillsList = [
-    'python', 'java', 'javascript', 'typescript', 'c++', 'c#', 'ruby', 'go', 'rust', 'swift',
-    'kotlin', 'php', 'scala', 'r', 'matlab', 'sql', 'nosql', 'html', 'css', 'sass',
-    'react', 'angular', 'vue', 'svelte', 'next.js', 'node.js', 'express', 'django', 'flask', 'spring',
-    'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform', 'jenkins', 'ci/cd', 'git',
-    'machine learning', 'deep learning', 'data science', 'data analysis', 'data engineering',
-    'api', 'rest', 'graphql', 'microservices', 'agile', 'scrum', 'devops', 'cloud computing',
-    'database', 'mongodb', 'postgresql', 'mysql', 'redis', 'elasticsearch',
-    'testing', 'unit testing', 'integration testing', 'automation', 'selenium',
-    'linux', 'networking', 'security', 'cybersecurity', 'blockchain',
-    'figma', 'sketch', 'adobe', 'photoshop', 'illustrator', 'ui/ux', 'product design',
-    'excel', 'powerpoint', 'tableau', 'power bi', 'looker', 'data visualization',
-    'project management', 'stakeholder management', 'budget management', 'risk management',
-    'marketing', 'seo', 'content strategy', 'social media', 'analytics', 'a/b testing',
-    'salesforce', 'hubspot', 'sap', 'erp', 'crm',
-    'artificial intelligence', 'natural language processing', 'computer vision',
-    'statistical analysis', 'etl', 'data warehouse', 'big data', 'hadoop', 'spark',
-  ];
-
-  const softSkillsList = [
-    'leadership', 'communication', 'problem solving', 'teamwork', 'collaboration',
-    'critical thinking', 'creativity', 'adaptability', 'time management', 'organization',
-    'attention to detail', 'interpersonal', 'presentation', 'negotiation', 'conflict resolution',
-    'mentoring', 'coaching', 'strategic thinking', 'decision making', 'initiative',
-    'self-motivated', 'analytical', 'innovative', 'proactive', 'customer-focused',
-    'cross-functional', 'multitasking', 'work ethic', 'emotional intelligence', 'resilience',
-  ];
-
-  const toolsList = [
-    'jira', 'confluence', 'slack', 'trello', 'asana', 'monday.com', 'notion',
-    'github', 'gitlab', 'bitbucket', 'vs code', 'intellij', 'postman',
-    'tableau', 'power bi', 'looker', 'grafana', 'datadog', 'splunk',
-    'salesforce', 'hubspot', 'zendesk', 'intercom', 'freshdesk',
-    'figma', 'sketch', 'invision', 'miro', 'lucidchart',
-    'aws', 'azure', 'google cloud', 'heroku', 'vercel', 'netlify',
-    'docker', 'kubernetes', 'ansible', 'terraform', 'jenkins', 'circleci',
-    'new relic', 'pagerduty', 'servicenow', 'workday',
-  ];
-
-  const certsList = [
-    'pmp', 'aws certified', 'azure certified', 'google certified', 'cissp', 'cism',
-    'scrum master', 'six sigma', 'itil', 'comptia', 'cisco', 'ccna', 'ccnp',
-    'cpa', 'cfa', 'series 7', 'series 63', 'google analytics',
-    'google data analytics', 'ibm data science', 'meta', 'coursera',
-  ];
-
-  const found = (list: string[]) => list.filter(s => lower.includes(s));
-
-  return {
-    hardSkills: found(hardSkillsList),
-    softSkills: found(softSkillsList),
-    tools: found(toolsList),
-    certifications: found(certsList),
-    industryKeywords: [],
-    technologies: found(hardSkillsList.slice(0, 30)),
-  };
-}
-
-function computeMatch(resumeText: string, jdKeywords: ExtractedKeywords): JobMatch {
-  const rLower = resumeText.toLowerCase();
-  const allJdKeywords = [
-    ...jdKeywords.hardSkills,
-    ...jdKeywords.softSkills,
-    ...jdKeywords.tools,
-    ...jdKeywords.certifications,
-  ];
-
-  const present = allJdKeywords.filter(k => rLower.includes(k));
-  const missing = allJdKeywords.filter(k => !rLower.includes(k));
-  const underrep = present.filter(k => {
-    const count = (rLower.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length;
-    return count === 1;
-  });
-
-  const skillsMatch = allJdKeywords.length > 0 ? Math.round((present.length / allJdKeywords.length) * 100) : 50;
-  const keywordMatch = Math.min(100, skillsMatch + Math.round(Math.random() * 10));
-  const experienceMatch = Math.min(100, 60 + Math.round(present.length * 2.5));
-  const educationMatch = Math.min(100, 70 + Math.round(Math.random() * 30));
-  const atsCompat = Math.min(100, 80 + Math.round(Math.random() * 15));
-  const overall = Math.round(skillsMatch * 0.3 + keywordMatch * 0.25 + experienceMatch * 0.2 + educationMatch * 0.1 + atsCompat * 0.15);
-
-  return {
-    overallMatch: overall,
-    skillsMatch,
-    experienceMatch,
-    keywordMatch,
-    educationMatch,
-    atsCompatibility: atsCompat,
-    presentKeywords: present,
-    missingKeywords: missing,
-    underrepresentedKeywords: underrep,
-    extractedKeywords: jdKeywords,
-    suggestions: [
-      ...missing.slice(0, 5).map(k => `Add "${k}" to your skills or experience sections`),
-      underrep.length > 0 ? `Mention keywords like "${underrep[0]}" more prominently in your experience bullets` : '',
-      'Tailor your professional summary to highlight relevant experience',
-      'Reorder skills to prioritize those mentioned in the job description',
-    ].filter(Boolean),
-    interviewProbabilityBefore: Math.max(20, overall - 25),
-    interviewProbabilityAfter: Math.min(95, overall + 15),
-  };
-}
 
 function getScoreColor(score: number) {
   if (score >= 80) return 'var(--color-success)';
@@ -157,12 +53,14 @@ function ScoreRingSmall({ score, label, size = 80 }: { score: number; label: str
 }
 
 export default function JobMatchPage() {
-  const { resumes, activeResumeId, setPage } = useResumeStore();
+  const { resumes, activeResumeId, setPage, addJobDescription, setJobMatch } = useResumeStore();
   const [jobText, setJobText] = useState('');
   const [selectedResumeId, setSelectedResumeId] = useState(activeResumeId || '');
   const [match, setMatch] = useState<JobMatch | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [keywordFilter, setKeywordFilter] = useState<'all' | 'present' | 'missing' | 'underrep'>('all');
+  const [roleTitle, setRoleTitle] = useState('');
+  const [company, setCompany] = useState('');
 
   const handleAnalyze = () => {
     const resume = resumes.find(r => r.id === selectedResumeId);
@@ -170,20 +68,40 @@ export default function JobMatchPage() {
 
     setIsAnalyzing(true);
     setTimeout(() => {
-      const resumeText = [
-        resume.summary,
-        ...resume.experience.flatMap(e => [e.jobTitle, e.company, ...e.bullets]),
-        ...resume.education.map(e => `${e.degree} ${e.institution}`),
-        ...resume.skills.map(s => s.name),
-        ...resume.projects.map(p => `${p.name} ${p.description} ${p.technologies.join(' ')}`),
-        ...resume.certifications.map(c => c.name),
-      ].join(' ');
-
-      const jdKeywords = extractKeywordsFromText(jobText);
-      const result = computeMatch(resumeText, jdKeywords);
+      const result = computeJobMatch(resume, jobText);
+      const guessed = guessJobMeta(jobText);
       setMatch(result);
+      setJobMatch(result);
+      setRoleTitle(prev => prev || guessed.title);
+      setCompany(prev => prev || guessed.company);
+
+      const jd: JobDescription = {
+        id: createId(),
+        title: roleTitle.trim() || guessed.title || 'Untitled role',
+        company: company.trim() || guessed.company || 'Unknown company',
+        rawText: jobText,
+        addedAt: new Date().toISOString(),
+        matchScore: result.overallMatch,
+      };
+      addJobDescription(jd);
       setIsAnalyzing(false);
-    }, 1500);
+    }, 800);
+  };
+
+  /**
+   * Hand this posting to the AI Optimizer. The posting is saved first, so the
+   * Optimizer can load it and write bullets and a skills list for this role.
+   */
+  const optimizeForThisJob = () => {
+    addJobDescription({
+      id: createId(),
+      title: roleTitle.trim() || 'Untitled role',
+      company: company.trim() || 'Unknown company',
+      rawText: jobText,
+      addedAt: new Date().toISOString(),
+      matchScore: match?.overallMatch,
+    });
+    setPage('optimizer');
   };
 
   return (
@@ -294,8 +212,8 @@ export default function JobMatchPage() {
                     { label: 'Education Match', score: match.educationMatch },
                     { label: 'ATS Compatibility', score: match.atsCompatibility },
                   ].map(item => (
-                    <div key={item.label} className="flex items-center gap-4" style={{ minWidth: 250 }}>
-                      <span className="text-sm text-secondary" style={{ width: 140 }}>{item.label}</span>
+                    <div key={item.label} className="flex items-center gap-4 match-row">
+                      <span className="text-sm text-secondary match-row-label">{item.label}</span>
                       <div style={{
                         flex: 1, height: 6, background: 'var(--bg-tertiary)',
                         borderRadius: 3, overflow: 'hidden', minWidth: 100,
@@ -345,9 +263,12 @@ export default function JobMatchPage() {
                 <p className="text-sm text-secondary mb-4">
                   Automatically tailor your resume to match this job description.
                 </p>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={optimizeForThisJob}>
                   <Sparkles size={16} /> Optimize Resume For This Job
                 </button>
+                <p className="text-xs text-muted mt-3">
+                  Opens the AI Optimizer with this posting saved, so it can write bullets and a skills list for this role.
+                </p>
               </div>
             </div>
 
