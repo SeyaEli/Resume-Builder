@@ -108,24 +108,15 @@ export default function Dashboard() {
                   background: 'var(--accent-primary)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
                 }}
               />
-              <div className="flex items-center gap-4">
-                <div style={{
-                  width: 44, height: 44, borderRadius: 'var(--radius-md)',
-                  background: 'var(--accent-subtle)', position: 'absolute',
-                  top: 24, left: 24,
-                }} />
-                <div style={{
-                  width: 44, height: 44, borderRadius: 'var(--radius-md)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--accent-primary)', position: 'relative', zIndex: 1,
-                }}>
+              <div className="quick-action-row">
+                <div className="quick-action-icon">
                   {action.icon}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <h3 className="font-semibold" style={{ fontSize: '0.95rem' }}>{action.label}</h3>
+                <div className="quick-action-text">
+                  <h3 className="font-semibold quick-action-label">{action.label}</h3>
                   <p className="text-xs text-tertiary mt-1">{action.desc}</p>
                 </div>
-                <ArrowRight size={16} style={{ color: 'var(--text-muted)' }} />
+                <ArrowRight size={16} className="quick-action-arrow" />
               </div>
             </motion.button>
           ))}

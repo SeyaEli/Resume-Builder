@@ -515,29 +515,26 @@ export default function ResumeBuilder() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
       {/* Progress Steps */}
-      <div className="flex items-center gap-1 mb-6" style={{ overflowX: 'auto', paddingBottom: 8 }}>
-        {STEPS.map((s, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <button
-              className={`flex items-center gap-2`}
-              onClick={() => setStep(i)}
-              style={{
-                padding: '8px 14px', borderRadius: 'var(--radius-md)',
-                background: step === i ? 'var(--accent-subtle)' : i < step ? 'rgba(16,185,129,0.05)' : 'transparent',
-                border: `1px solid ${step === i ? 'var(--border-accent)' : i < step ? 'rgba(16,185,129,0.15)' : 'var(--border-primary)'}`,
-                color: step === i ? 'var(--accent-primary)' : i < step ? 'var(--color-success)' : 'var(--text-muted)',
-                fontSize: '0.8rem', fontWeight: step === i ? 600 : 500, whiteSpace: 'nowrap',
-                cursor: 'pointer', transition: 'all 0.15s ease',
-              }}
-            >
-              {i < step ? <Check size={14} /> : s.icon}
-              {s.label}
-            </button>
-            {i < STEPS.length - 1 && (
-              <div style={{ width: 20, height: 2, background: i < step ? 'var(--color-success)' : 'var(--border-primary)', borderRadius: 1 }} />
-            )}
-          </div>
-        ))}
+      <div className="step-rail" role="tablist" aria-label="Resume sections">
+        {STEPS.map((s, i) => {
+          const state = step === i ? 'active' : i < step ? 'done' : 'todo';
+          return (
+            <div key={i} className="step-item">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={step === i}
+                aria-label={`${s.label} (step ${i + 1} of ${STEPS.length})`}
+                className={`step-chip ${state}`}
+                onClick={() => setStep(i)}
+              >
+                <span className="step-chip-icon">{i < step ? <Check size={14} /> : s.icon}</span>
+                <span className="step-chip-label">{s.label}</span>
+              </button>
+              {i < STEPS.length - 1 && <span className="step-link" aria-hidden="true" />}
+            </div>
+          );
+        })}
       </div>
 
       {/* Main Content */}
