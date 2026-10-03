@@ -55,6 +55,10 @@
   --glass-bg: #2E2923;
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 0px; 
+  /* Surface family: the theme engine rewrites these when a style is picked. */
+  --radius-card: 12px;
+  --surface-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.45), 0 12px 28px -12px rgba(0, 0, 0, 0.5);
+  --surface-inner: none;
   
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -461,14 +465,9 @@ input, textarea, select { font-family: inherit; }
    ============================================ */
 
 .mobile-menu-btn {
-  display: none;
+  display: flex;
   margin-right: var(--space-3);
-}
-
-@media (max-width: 768px) {
-  .mobile-menu-btn {
-    display: flex;
-  }
+  flex-shrink: 0;
 }
 
 .sidebar-overlay {
@@ -588,18 +587,20 @@ input, textarea, select { font-family: inherit; }
    ============================================ */
 
 .glass-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
+  background: var(--panel-fill, var(--glass-bg));
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
   padding: var(--space-6);
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
+  box-shadow: var(--surface-shadow), var(--surface-inner);
 }
 
 .glass-card:hover {
   border-color: var(--border-secondary);
-  background: var(--bg-card-hover);
-  box-shadow: var(--shadow-md);
+  background: var(--glass-bg-hover, var(--bg-card-hover));
+  box-shadow: var(--surface-shadow), var(--surface-inner);
 }
 
 .glass-card-glow::before { display: none; }
@@ -2284,35 +2285,14 @@ textarea.input-field {
 
 /* ---- Collapsible sidebar ---- */
 
-.sidebar-collapse-btn {
-  margin-left: auto;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-}
-.sidebar-collapse-btn:hover {
-  color: var(--accent-primary);
-  background: var(--accent-subtle);
-  border-color: var(--border-accent);
-}
-
 .app-sidebar.collapsed { width: var(--sidebar-collapsed); }
-.app-sidebar.collapsed .sidebar-logo { justify-content: center; padding-inline: var(--space-2); }
+.app-sidebar.collapsed .sidebar-logo { justify-content: space-between; padding-inline: var(--space-2); gap: var(--space-1); }
 .app-sidebar.collapsed .brand-text,
 .app-sidebar.collapsed .sidebar-logo-text,
 .app-sidebar.collapsed .sidebar-item-text,
 .app-sidebar.collapsed .sidebar-badge,
 .app-sidebar.collapsed .sidebar-section-label,
 .app-sidebar.collapsed .sidebar-user-info { display: none; }
-.app-sidebar.collapsed .sidebar-collapse-btn { display: none; }
 .app-sidebar.collapsed .sidebar-item { justify-content: center; padding-inline: var(--space-3); margin-inline: var(--space-2); }
 .app-sidebar.collapsed .sidebar-user { justify-content: center; padding-inline: var(--space-2); }
 .app-sidebar.collapsed .sidebar-section-label {
@@ -2338,14 +2318,13 @@ textarea.input-field {
 /* ---- Cards ---- */
 
 .glass-card {
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  /* Radius, fill and depth come from the chosen surface style. */
+  transform: translateZ(0);
 }
 .glass-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--surface-shadow), var(--surface-inner);
   transform: translateY(-1px);
 }
-
 .stat-card {
   border-radius: var(--radius-xl);
   transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
@@ -2777,7 +2756,6 @@ html[data-theme="light"] .template-card.selected { box-shadow: 0 0 0 1px var(--a
   }
   .app-sidebar.collapsed .sidebar-item { justify-content: flex-start; }
   .app-sidebar.collapsed .sidebar-user { justify-content: flex-start; }
-  .sidebar-collapse-btn { display: none; }
   .app-main.sidebar-collapsed { margin-left: 0; }
 }
 
@@ -3018,67 +2996,251 @@ table { max-width: 100%; }
   outline-offset: 2px;
 }
 
-/* -- Tablet: shorten the connectors so all 9 fit -- */
+/* -- Tablet: tighten chips + connectors so all 9 stay on one line -- */
 @media (max-width: 900px) {
   .step-link { width: 10px; }
   .step-chip { padding: 7px 11px; font-size: 0.76rem; }
 }
 
-/* -- Mobile: one scrollable row that snaps, never wraps -- */
+/* -- Mobile: ALL steps fit in one view. No swipe, no side scroll. -- */
 @media (max-width: 768px) {
   .step-rail {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    padding: 2px 2px 10px;
+    /* No scrolling: the row is a plain flex line that shares its width. */
+    overflow: visible;
+    scroll-snap-type: none;
+    flex-wrap: nowrap;
+    padding: 4px 2px 10px;
     gap: 4px;
-    margin-left: -2px;
-    margin-right: -2px;
-    scrollbar-width: none;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
-
-  .step-rail::-webkit-scrollbar { display: none; }
 
   .step-item {
-    scroll-snap-align: start;
-    gap: 4px;
+    /* Shrink to fit. flex-basis 0 makes every chip claim an equal share. */
+    flex: 1 1 0;
+    min-width: 0;
+    gap: 0;
   }
 
-  /* Drop the connector on phones - it is what makes the row look ragged */
+  /* No connector: the chips sit edge to edge in one composed row. */
   .step-link { display: none; }
 
   .step-chip {
-    padding: 8px 12px;
-    font-size: 0.78rem;
-    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 0.72rem;
+    gap: 5px;
   }
 
-  /* Fade the right edge so it reads as scrollable, not cut off */
-  .step-rail {
-    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
-  }
-}
-
-/* -- Small phones: icon-only rail keeps every step reachable -- */
-@media (max-width: 480px) {
-  .step-chip {
-    padding: 9px 13px;
-    font-size: 0.75rem;
-  }
-
+  /* Labels give way before the row ever overflows. */
   .step-chip-label {
-    max-width: 84px;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
-/* -- Very narrow: hide labels, show just the icon + active label -- */
+/* -- Small phones: tighter still, labels truncate harder -- */
+@media (max-width: 480px) {
+  .step-rail { padding: 4px 0 8px; gap: 3px; }
+
+  .step-item { flex: 1 1 0; min-width: 0; }
+
+  .step-chip {
+    padding: 7px 4px;
+    font-size: 0.68rem;
+    gap: 3px;
+  }
+
+  .step-chip-label { max-width: 100%; }
+}
+
+/* -- Very narrow: numbered circles only, all 9 still on one line -- */
 @media (max-width: 380px) {
+  .step-rail { gap: 2px; padding: 3px 0 8px; }
+  .step-chip { padding: 6px 2px; gap: 0; }
   .step-chip-label { display: none; }
-  .step-chip.active .step-chip-label { display: inline; }
-  .step-chip { padding: 9px; }
-  .step-chip.active { padding: 9px 12px; }
+  .step-chip-icon { width: 18px; height: 18px; }
+}
+
+/* ============================================
+   Surface style picker (Settings > Appearance)
+   Each option shows a small chip drawn in that style, so the choice
+   is visible before it is applied.
+   ============================================ */
+.surface-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+}
+
+.surface-option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+}
+
+.surface-option:hover {
+  border-color: var(--border-secondary);
+  background: var(--bg-card-hover);
+}
+
+.surface-option.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-soft);
+}
+
+.surface-option-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.surface-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.surface-hint {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* A tiny sample panel, drawn the way that style draws real cards. */
+.surface-chip {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+.surface-chip-flat {
+  border-radius: 2px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-secondary);
+  box-shadow: none;
+}
+.surface-chip-elevated {
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid transparent;
+  box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.5), 0 10px 22px -8px rgba(0, 0, 0, 0.6);
+}
+.surface-chip-glass {
+  border-radius: 14px;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.surface-chip-neomorph {
+  border-radius: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.7), -4px -4px 10px rgba(255, 255, 255, 0.09),
+    inset 2px 2px 5px rgba(0, 0, 0, 0.45), inset -2px -2px 5px rgba(255, 255, 255, 0.07);
+}
+
+/* The live preview keeps the chosen surface too, so it never lies. */
+.theme-preview-card {
+  border-radius: var(--radius-card);
+  box-shadow: var(--surface-shadow), var(--surface-inner);
+}
+
+@media (max-width: 640px) {
+  .surface-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .surface-option { padding: var(--space-2); }
+  .surface-hint { display: none; }
+}
+@media (max-width: 380px) {
+  .surface-grid { grid-template-columns: 1fr; }
+  .surface-hint { display: block; }
+}
+/* ============================================
+   Surface style — shell character (authoritative, last so it wins)
+   Each style changes the sidebar, header and inputs too, not just cards,
+   so picking one is unmistakable.
+   ============================================ */
+
+/* Every panel paints the chosen fill, and the sidebar/header follow it. */
+.app-sidebar,
+.app-header {
+  background: var(--bg-sidebar);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* ---- Flat: hard edges, visible outlines, zero depth ---- */
+[data-surface='flat'] .glass-card,
+[data-surface='flat'] .stat-card {
+  border: 1.5px solid var(--border-secondary);
+  box-shadow: none;
+}
+[data-surface='flat'] .app-sidebar,
+[data-surface='flat'] .app-header {
+  border-color: var(--border-secondary);
+}
+[data-surface='flat'] .sidebar-nav-item.active {
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 0;
+}
+
+/* ---- Elevated: the page sits back, panels float well above it ---- */
+[data-surface='elevated'] .app-content {
+  background-image: none;
+}
+
+/* ---- Glass: the whole chrome is frosted panes ---- */
+[data-surface='glass'] .app-sidebar,
+[data-surface='glass'] .app-header {
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+}
+[data-surface='glass'] .glass-card {
+  background-image: var(--panel-fill);
+}
+[data-surface='glass'] .btn-primary {
+  box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* ---- Neomorph: everything pressed out of one soft slab ---- */
+[data-surface='neomorph'] .app-content {
+  background-image: radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.045), transparent 55%);
+}
+[data-surface='neomorph'] .glass-card {
+  border-color: transparent;
+  box-shadow: 14px 14px 34px rgba(0, 0, 0, 0.72), -10px -10px 26px rgba(255, 255, 255, 0.07),
+    inset 3px 3px 8px rgba(0, 0, 0, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.06);
+}
+html[data-theme='light'][data-surface='neomorph'] .glass-card {
+  box-shadow: 14px 14px 34px rgba(16, 24, 40, 0.2), -10px -10px 26px rgba(255, 255, 255, 1),
+    inset 3px 3px 8px rgba(16, 24, 40, 0.11), inset -3px -3px 8px rgba(255, 255, 255, 0.95);
+}
+[data-surface='neomorph'] .glass-card:hover {
+  transform: translateY(-2px);
+}
+[data-surface='neomorph'] .btn,
+[data-surface='neomorph'] .input-field,
+[data-surface='neomorph'] .sidebar-nav-item {
+  border-radius: var(--radius-card);
+  box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.55), -3px -3px 9px rgba(255, 255, 255, 0.05);
+}
+html[data-theme='light'][data-surface='neomorph'] .btn,
+html[data-theme='light'][data-surface='neomorph'] .input-field,
+html[data-theme='light'][data-surface='neomorph'] .sidebar-nav-item {
+  box-shadow: 5px 5px 12px rgba(16, 24, 40, 0.14), -3px -3px 9px rgba(255, 255, 255, 0.9);
 }

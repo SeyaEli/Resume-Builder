@@ -295,12 +295,16 @@ export type AppPage =
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
+export type SurfaceStyle = 'flat' | 'glass' | 'neomorph' | 'elevated';
+
 export type PaletteId = 'amber' | 'emerald' | 'azure' | 'violet' | 'rose' | 'graphite';
 
 export interface UserPreferences {
   language: string;
   theme: ThemeMode;
   palette: PaletteId;
+  /** How the cards and panels are drawn: flat, glass, neomorph, elevated. */
+  surface: SurfaceStyle;
   defaultTemplate: TemplateType;
   autoSave: boolean;
 }
@@ -347,7 +351,7 @@ export const TEMPLATE_INFO: Record<TemplateType, TemplateDesign> = {
   modern: {
     name: 'Modern',
     description: 'Thick role line with a highlights box up top',
-    icon: 'Sparkles', layout: 'modern', accent: '#FFA929', atsSafe: true,
+    icon: 'FileText', layout: 'modern', accent: '#FFA929', atsSafe: true,
   },
   corporate: {
     name: 'Corporate',

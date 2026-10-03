@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Target, AlertCircle, AlertTriangle, Lightbulb, CheckCircle2, XCircle,
-  TrendingUp, Zap, Shield, BookOpen, Wrench, FileText, BarChart3, Sparkles
+  TrendingUp, Zap, Shield, BookOpen, Wrench, FileText, BarChart3, Workflow
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { analyzeResume } from '../services/atsScorer';
@@ -284,7 +284,7 @@ export default function ATSChecker() {
                   <Zap size={18} /> Fix Issues in Builder
                 </button>
                 <button className="btn btn-secondary btn-lg" onClick={() => setPage('optimizer')}>
-                  <Sparkles size={18} /> AI Optimizer
+                  <Workflow size={18} /> Resume Optimizer
                 </button>
               </div>
             </div>

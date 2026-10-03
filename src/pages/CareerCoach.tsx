@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Sparkles, Bot, Target, FileText, Loader2 } from 'lucide-react';
+import { Send, Compass, Bot, Target, FileText, Loader2 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { createId } from '../types/resume';
 import type { ChatMessage } from '../types/resume';
@@ -119,7 +119,7 @@ export default function CareerCoach() {
               >
                 <div className="flex items-start gap-2">
                   {msg.role === 'assistant' && (
-                    <Sparkles size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: 3 }} />
+                    <Compass size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: 3 }} />
                   )}
                   <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
                 </div>

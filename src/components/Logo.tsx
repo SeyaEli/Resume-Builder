@@ -8,7 +8,7 @@
 interface LogoProps {
   /** Pixel size of the square mark. */
   size?: number;
-  /** Show the "ResumeAI Pro" wordmark beside the mark. */
+  /** Show the "Resume Studio" wordmark beside the mark. */
   showText?: boolean;
   className?: string;
 }
@@ -47,9 +47,9 @@ export default function Logo({ size = 36, showText = true, className }: LogoProp
       {showText && (
         <span className="brand-text">
           <span className="brand-name" style={{ fontSize: size > 30 ? 'var(--text-lg)' : 'var(--text-base)' }}>
-            ResumeAI
+            Resume Studio
           </span>
-          <span className="brand-tag">Pro</span>
+          <span className="brand-tag">ATS</span>
         </span>
       )}
     </div>

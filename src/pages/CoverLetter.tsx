@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FileEdit, Copy, Download, Sparkles, Building2, User, Check
+  FileEdit, Copy, Download, FileSignature, Building2, User, Check
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import type { CoverLetterStyle, CoverLetter, Resume } from '../types/resume';
@@ -9,7 +9,7 @@ import { createId } from '../types/resume';
 
 const STYLES: { key: CoverLetterStyle; label: string; desc: string; icon: React.ReactNode }[] = [
   { key: 'formal', label: 'Formal', desc: 'Traditional and professional', icon: <Building2 size={20} /> },
-  { key: 'modern', label: 'Modern', desc: 'Contemporary and engaging', icon: <Sparkles size={20} /> },
+  { key: 'modern', label: 'Modern', desc: 'Contemporary and engaging', icon: <FileSignature size={20} /> },
   { key: 'executive', label: 'Executive', desc: 'Sophisticated and commanding', icon: <User size={20} /> },
   { key: 'entry-level', label: 'Entry-Level', desc: 'Enthusiastic and eager', icon: <FileEdit size={20} /> },
 ];
@@ -229,7 +229,7 @@ export default function CoverLetterPage() {
                     {isGenerating ? (
                       <><div className="spinner" style={{ width: 16, height: 16 }} /> Generating...</>
                     ) : (
-                      <><Sparkles size={16} /> Generate Cover Letter</>
+                      <><FileSignature size={16} /> Generate Cover Letter</>
                     )}
                   </button>
                 </div>

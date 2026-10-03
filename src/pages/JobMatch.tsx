@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase, Search, Target, TrendingUp, Lightbulb, CheckCircle2, XCircle, AlertTriangle,
-  ArrowRight, Sparkles, Clipboard, Zap
+  ArrowRight, Workflow, Clipboard, Zap
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import type { JobMatch, JobDescription } from '../types/resume';
@@ -264,10 +264,10 @@ export default function JobMatchPage() {
                   Automatically tailor your resume to match this job description.
                 </p>
                 <button className="btn btn-primary" onClick={optimizeForThisJob}>
-                  <Sparkles size={16} /> Optimize Resume For This Job
+                  <Workflow size={16} /> Optimize Resume For This Job
                 </button>
                 <p className="text-xs text-muted mt-3">
-                  Opens the AI Optimizer with this posting saved, so it can write bullets and a skills list for this role.
+                  Opens the Resume Optimizer with this posting saved, so it can write bullets and a skills list for this role.
                 </p>
               </div>
             </div>

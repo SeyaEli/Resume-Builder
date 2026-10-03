@@ -6,11 +6,11 @@ import {
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { TEMPLATE_INFO } from '../types/resume';
-import type { TemplateType, ThemeMode } from '../types/resume';
+import type { TemplateType, ThemeMode, SurfaceStyle } from '../types/resume';
 import TemplateThumbnail from '../components/TemplateThumbnail';
 import { getAiConfig, saveAiConfig, testConnection } from '../services/aiService';
 import type { AiConfig } from '../services/aiService';
-import { PALETTES, paletteSwatch, resolveMode } from '../services/themeService';
+import { PALETTES, SURFACES, paletteSwatch, resolveMode } from '../services/themeService';
 
 const TEMPLATE_KEYS = Object.keys(TEMPLATE_INFO) as TemplateType[];
 
@@ -19,6 +19,12 @@ const THEME_MODES: { mode: ThemeMode; title: string; desc: string; icon: React.R
   { mode: 'dark', title: 'Dark', desc: 'Easy on the eyes at night', icon: <Moon size={16} /> },
   { mode: 'system', title: 'Match my device', desc: 'Follows your phone or PC setting', icon: <Monitor size={16} /> },
 ];
+
+const SURFACE_STYLES: { id: SurfaceStyle; name: string; desc: string }[] = SURFACES.map(s => ({
+  id: s.id,
+  name: s.name,
+  desc: s.hint,
+}));
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -141,6 +147,25 @@ export default function Settings() {
             ))}
           </div>
 
+
+          <div className="input-label" style={{ margin: 'var(--space-5) 0 var(--space-2)' }}>Panel style</div>
+          <div className="surface-grid">
+            {SURFACE_STYLES.map(style => (
+              <button
+                key={style.id}
+                className={`surface-option ${preferences.surface === style.id ? 'active' : ''}`}
+                onClick={() => updatePref('surface', style.id)}
+                title={style.desc}
+              >
+                <span className="surface-option-top">
+                  <span className={`surface-chip surface-chip-${style.id}`} />
+                  <span className="surface-name">{style.name}</span>
+                  {preferences.surface === style.id && <Check size={14} style={{ marginLeft: 'auto', color: 'var(--accent-primary)' }} />}
+                </span>
+                <span className="surface-hint">{style.desc}</span>
+              </button>
+            ))}
+          </div>
           {/* Tiny mock of the app, drawn with the live theme variables */}
           <div className="theme-preview" aria-hidden="true">
             <div className="theme-preview-bar">

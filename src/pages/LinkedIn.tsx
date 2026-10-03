@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link2, Copy, Check, Sparkles, User, Briefcase, Wrench, Search, Loader2, RefreshCw } from 'lucide-react';
+import { Link2, Copy, Check, Share2, User, Briefcase, Wrench, Search, Loader2, RefreshCw } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { runAi, generateLinkedInHeadline } from '../services/aiService';
 
@@ -77,7 +77,7 @@ export default function LinkedInOptimizer() {
             <button className="btn btn-primary btn-lg" onClick={() => setPage('builder')}>Create Resume First</button>
           ) : (
             <button className="btn btn-primary btn-lg" onClick={handleGenerate} disabled={isGenerating}>
-              {isGenerating ? <><Loader2 size={18} className="spin" /> Generating...</> : <><Sparkles size={18} /> Generate LinkedIn Content</>}
+              {isGenerating ? <><Loader2 size={18} className="spin" /> Generating...</> : <><Share2 size={18} /> Generate LinkedIn Content</>}
             </button>
           )}
         </div>

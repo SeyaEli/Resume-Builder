@@ -164,6 +164,7 @@ export const useResumeStore = create<ResumeState>()(
         language: 'en',
         theme: 'dark',
         palette: 'amber',
+        surface: 'elevated',
         defaultTemplate: 'modern',
         autoSave: true,
       },
@@ -232,16 +233,17 @@ export const useResumeStore = create<ResumeState>()(
     }),
     {
       name: 'ats-resume-platform',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       // Older saves have no palette (and no 'system' mode). Fill them in
       // instead of dropping the user's settings on the floor.
       migrate: (persisted, version) => {
         const state = (persisted ?? {}) as Partial<ResumeState>;
-        if (version < 2) {
+        if (version < 3) {
           state.preferences = {
-            palette: 'amber',
             ...(state.preferences ?? {}),
+            palette: 'amber',
+            surface: 'elevated',
           } as UserPreferences;
         }
         return state as ResumeState;

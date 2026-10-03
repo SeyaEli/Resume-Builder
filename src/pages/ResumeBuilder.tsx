@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, FileText, Briefcase, GraduationCap, Wrench, FolderOpen,
-  Award, Check, ChevronLeft, ChevronRight, Plus, Trash2, Sparkles,
+  Award, Check, ChevronLeft, ChevronRight, Plus, Trash2, Workflow,
   Download, Target, Loader2, Languages
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
@@ -212,7 +212,7 @@ export default function ResumeBuilder() {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold">Professional Summary</h3>
         <button className="btn btn-secondary btn-sm" onClick={handleAiSummary} disabled={aiBusy}>
-          {aiBusy ? <><Loader2 size={14} className="spin" /> Writing...</> : <><Sparkles size={14} /> AI Generate</>}
+          {aiBusy ? <><Loader2 size={14} className="spin" /> Writing...</> : <><Workflow size={14} /> Generate</>}
         </button>
       </div>
       <textarea

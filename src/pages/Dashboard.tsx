@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import {
   FileText, Target, Briefcase, Mail, Plus, Upload,
-  MessageSquare, FileEdit, Sparkles, ArrowRight, Clock, Zap
+  MessageSquare, FileEdit, LayoutDashboard, ArrowRight, Clock, Zap
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { analyzeResume } from '../services/atsScorer';
@@ -37,7 +37,7 @@ export default function Dashboard() {
     { label: 'ATS Score Check', desc: 'Scan your resume for ATS compatibility', icon: <Target size={22} />, page: 'ats-checker' as const, color: 'var(--accent-primary)' },
     { label: 'Match to Job', desc: 'Tailor your resume to a job description', icon: <Briefcase size={22} />, page: 'job-match' as const, color: 'var(--accent-primary)' },
     { label: 'Cover Letter', desc: 'Generate a professional cover letter', icon: <FileEdit size={22} />, page: 'cover-letter' as const, color: 'var(--accent-primary)' },
-    { label: 'Career Coach', desc: 'Get AI-powered career advice', icon: <MessageSquare size={22} />, page: 'career-coach' as const, color: 'var(--accent-primary)' },
+    { label: 'Career Coach', desc: 'Get guided career advice for your situation', icon: <MessageSquare size={22} />, page: 'career-coach' as const, color: 'var(--accent-primary)' },
   ];
 
   const handleNewResume = () => {
@@ -50,13 +50,13 @@ export default function Dashboard() {
       {/* Welcome */}
       <motion.div {...fadeInUp} transition={{ delay: 0.1 }} style={{ marginBottom: '2rem' }}>
         <div className="flex items-center gap-3 mb-2">
-          <Sparkles size={28} style={{ color: 'var(--accent-primary)' }} />
+          <LayoutDashboard size={28} style={{ color: 'var(--accent-primary)' }} />
           <h1 className="text-4xl font-black">
             Welcome back
           </h1>
         </div>
         <p className="text-secondary text-lg" style={{ maxWidth: 600 }}>
-          Your AI-powered resume platform. Create, optimize, and export ATS-compliant resumes that land interviews.
+          Create, optimize, and export ATS-compliant resumes that land interviews.
         </p>
       </motion.div>
 
@@ -130,9 +130,6 @@ export default function Dashboard() {
             <h2 className="text-xl font-bold">Recent Resumes</h2>
             <p className="text-sm text-tertiary mt-1">Continue editing your resumes</p>
           </div>
-          <button className="btn btn-primary btn-sm" onClick={handleNewResume}>
-            <Plus size={14} /> New Resume
-          </button>
         </div>
 
         {resumes.length === 0 ? (

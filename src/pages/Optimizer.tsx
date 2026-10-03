@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, CheckCircle2, RefreshCw, Zap, TrendingUp, Eye, Bot,
+  Workflow, CheckCircle2, RefreshCw, Zap, TrendingUp, Eye, Bot,
   ArrowRight, ArrowUpRight, AlertTriangle, Loader2, Copy, Check, Target,
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
@@ -180,7 +180,7 @@ export default function Optimizer() {
       {/* Tabs */}
       <div className="tabs mb-6 tabs-fit">
         {[
-          { key: 'resume' as const, label: 'Optimize my resume', icon: <Sparkles size={14} /> },
+          { key: 'resume' as const, label: 'Optimize my resume', icon: <Workflow size={14} /> },
           { key: 'job' as const, label: 'Target a job posting', icon: <Target size={14} /> },
         ].map(t => (
           <button key={t.key} className={`tab-item ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>
@@ -349,7 +349,7 @@ export default function Optimizer() {
             >
               {isTargeting
                 ? <><Loader2 size={16} className="spin" /> Reading the posting...</>
-                : <><Sparkles size={16} /> Write targeted content</>}
+                : <><Workflow size={16} /> Write targeted content</>}
             </button>
           </div>
 

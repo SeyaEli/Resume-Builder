@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard, FileText, Target, Sparkles, FileEdit,
+  LayoutDashboard, FileText, Target, Workflow, FileEdit,
   Briefcase, Link2, MessageSquare, Settings, Menu, X,
-  CheckCircle2, Sun, Moon, Monitor, ChevronLeft, ChevronRight
+  CheckCircle2, Sun, Moon, Monitor
 } from 'lucide-react';
 import { useResumeStore } from './stores/resumeStore';
 import type { AppPage, ThemeMode } from './types/resume';
@@ -36,14 +36,14 @@ const NAV_MAIN: NavItem[] = [
   { page: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
   { page: 'builder', label: 'Resume Builder', icon: <FileText size={20} /> },
   { page: 'ats-checker', label: 'ATS Checker', icon: <Target size={20} /> },
-  { page: 'optimizer', label: 'AI Optimizer', icon: <Sparkles size={20} />, badge: 'AI' },
+  { page: 'optimizer', label: 'Resume Optimizer', icon: <Workflow size={20} /> },
 ];
 
 const NAV_TOOLS: NavItem[] = [
   { page: 'cover-letter', label: 'Cover Letter', icon: <FileEdit size={20} /> },
   { page: 'job-match', label: 'Job Match', icon: <Briefcase size={20} /> },
   { page: 'linkedin', label: 'LinkedIn', icon: <Link2 size={20} /> },
-  { page: 'career-coach', label: 'Career Coach', icon: <MessageSquare size={20} />, badge: 'AI' },
+  { page: 'career-coach', label: 'Career Coach', icon: <MessageSquare size={20} /> },
 ];
 
 const PAGE_TITLES: Record<AppPage, string> = {
@@ -82,7 +82,7 @@ function PageContent({ page }: { page: AppPage }) {
 export default function App() {
   const { currentPage, setPage, sidebarOpen, toggleSidebar, toasts, removeToast, preferences } = useResumeStore();
 
-  const { theme, palette } = preferences;
+  const { theme, palette, surface } = preferences;
 
   // Collapsed rail is a desktop preference, remembered between visits.
   const [collapsed, setCollapsed] = useState(() => {
@@ -92,6 +92,21 @@ export default function App() {
       return false;
     }
   });
+
+  // The sidebar has two behaviours, and they must not fight each other:
+  //  - under 1024px it is a slide-over drawer (sidebarOpen)
+  //  - at 1024px and up it is a rail that collapses to icons (collapsed)
+  // One button can drive both if the width is checked when it is pressed,
+  // which is also what fixes the burger being dead on a desktop.
+  const isDrawer = () => window.innerWidth < 1024;
+
+  const handleSidebarToggle = () => {
+    if (isDrawer()) {
+      toggleSidebar();
+    } else {
+      toggleCollapsed();
+    }
+  };
 
   const toggleCollapsed = () => {
     setCollapsed(prev => {
@@ -112,10 +127,10 @@ export default function App() {
   // Paint the chosen mode + palette. On 'system' we keep listening, so the
   // app switches the moment the device does.
   useEffect(() => {
-    const paint = () => applyTheme(resolveMode(theme), palette);
+    const paint = () => applyTheme(resolveMode(theme), palette, surface);
     paint();
     return theme === 'system' ? watchSystemTheme(paint) : undefined;
-  }, [theme, palette]);
+  }, [theme, palette, surface]);
 
   // Close sidebar on mobile when page changes
   useEffect(() => {
@@ -134,14 +149,6 @@ export default function App() {
         {/* Logo */}
         <div className="sidebar-logo">
           <Logo size={36} />
-          <button
-            className="sidebar-collapse-btn"
-            onClick={toggleCollapsed}
-            aria-label="Collapse sidebar"
-            title="Collapse sidebar"
-          >
-            <ChevronLeft size={16} />
-          </button>
         </div>
 
         {/* Navigation */}
@@ -209,23 +216,13 @@ export default function App() {
         <header className="app-header">
           <button
             className="btn btn-icon btn-ghost mobile-menu-btn"
-            onClick={toggleSidebar}
-            aria-label="Toggle menu"
+            onClick={handleSidebarToggle}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {sidebarOpen && isDrawer() ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          {collapsed && (
-            <button
-              className="btn btn-icon btn-ghost"
-              onClick={toggleCollapsed}
-              aria-label="Expand sidebar"
-              title="Expand sidebar"
-              style={{ marginRight: 'var(--space-3)' }}
-            >
-              <ChevronRight size={18} />
-            </button>
-          )}
 
           <h2 className="header-title">{PAGE_TITLES[currentPage]}</h2>
 
