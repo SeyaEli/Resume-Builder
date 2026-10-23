@@ -69,8 +69,12 @@ export async function exportToPDF(resume: Resume): Promise<void> {
   const p = resume.personalInfo;
 
   if (p.photo) {
-    pdf.addImage(p.photo, 'JPEG', pageW - marginX - 60, y, 60, 60);
-    y += 72;
+    const image = pdf.getImageProperties(p.photo);
+    const scale = Math.min(60 / image.width, 75 / image.height);
+    const width = image.width * scale;
+    const height = image.height * scale;
+    pdf.addImage(p.photo, 'JPEG', pageW - marginX - width, y, width, height);
+    y += height + 12;
   }
 
   // ---- Header ----

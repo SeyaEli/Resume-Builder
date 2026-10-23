@@ -807,8 +807,8 @@ export default function ResumePreview({ resume, template }: ResumePreviewProps) 
     >
       {resume.personalInfo.photo && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-          <img src={resume.personalInfo.photo} alt="Resume photo" width={80} height={80}
-            style={{ objectFit: 'cover', flexShrink: 0 }} />
+          <img src={resume.personalInfo.photo} alt="Resume photo"
+            style={{ width: 'auto', height: 'auto', maxWidth: 80, maxHeight: 100, objectFit: 'contain', flexShrink: 0 }} />
         </div>
       )}
       {LAYOUTS[layout](ctx)}
