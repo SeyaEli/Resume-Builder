@@ -7,7 +7,7 @@
 // is what an ATS parser reads and what html2canvas photographs for the PDF.
 // ============================================
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type {
   Resume, TemplateType, TemplateLayout, Experience, Education,
 } from '../types/resume';
@@ -464,10 +464,29 @@ function VolunteerBlock({ ctx, title = 'Activities' }: { ctx: Ctx; title?: strin
 // Headers (one per family — these differ a lot)
 // ============================================
 
+function ResumeHeader({ ctx, style, children }: {
+  ctx: Ctx;
+  style: CSSProperties;
+  children: ReactNode;
+}) {
+  const photo = ctx.resume.personalInfo.photo;
+  return (
+    <header style={{ ...style, ...(photo ? {
+      display: 'flex', alignItems: 'flex-start', gap: 20,
+    } : {}) }}>
+      <div style={{ flex: '1 1 auto', minWidth: 0, overflowWrap: 'anywhere' }}>{children}</div>
+      {photo && (
+        <img src={photo} alt="Resume photo"
+          style={{ width: 112, height: 96, objectFit: 'contain', objectPosition: 'top right', flexShrink: 0 }} />
+      )}
+    </header>
+  );
+}
+
 function AlignedHeader({ ctx, bold = false }: { ctx: Ctx; bold?: boolean }) {
   const p = ctx.resume.personalInfo;
   return (
-    <header style={{ marginBottom: 10 }}>
+    <ResumeHeader ctx={ctx} style={{ marginBottom: 10 }}>
       <h1 style={{
         fontSize: ctx.size + (bold ? 16 : 13), fontWeight: 700, color: '#111',
         fontFamily: ctx.font, marginBottom: 2, letterSpacing: ctx.heading === 'letterspaced' ? '0.04em' : undefined,
@@ -479,14 +498,14 @@ function AlignedHeader({ ctx, bold = false }: { ctx: Ctx; bold?: boolean }) {
         }}>{p.title}</div>
       )}
       <div style={{ fontSize: ctx.size - 1, color: '#444' }}>{contactParts(ctx.resume).join('  |  ')}</div>
-    </header>
+    </ResumeHeader>
   );
 }
 
 function CenteredHeader({ ctx, serif = false }: { ctx: Ctx; serif?: boolean }) {
   const p = ctx.resume.personalInfo;
   return (
-    <header style={{ textAlign: 'center', marginBottom: 10 }}>
+    <ResumeHeader ctx={ctx} style={{ textAlign: 'center', marginBottom: 10 }}>
       <h1 style={{
         fontSize: serif ? ctx.size + 15 : ctx.size + 12, fontWeight: 700, color: '#111',
         fontFamily: serif ? SERIF : ctx.font, marginBottom: 2,
@@ -496,14 +515,14 @@ function CenteredHeader({ ctx, serif = false }: { ctx: Ctx; serif?: boolean }) {
         <div style={{ fontSize: ctx.size + 1, color: '#333', marginBottom: 3 }}>{p.title}</div>
       )}
       <div style={{ fontSize: ctx.size - 1, color: '#444' }}>{contactParts(ctx.resume).join('  |  ')}</div>
-    </header>
+    </ResumeHeader>
   );
 }
 
 function SideBarHeader({ ctx }: { ctx: Ctx }) {
   const p = ctx.resume.personalInfo;
   return (
-    <header style={{ marginBottom: 12, borderTop: `4px solid ${ctx.accent}`, paddingTop: 8 }}>
+    <ResumeHeader ctx={ctx} style={{ marginBottom: 12, borderTop: `4px solid ${ctx.accent}`, paddingTop: 8 }}>
       <h1 style={{ fontSize: ctx.size + 15, fontWeight: 600, color: '#111', fontFamily: ctx.font, marginBottom: 2 }}>
         {p.fullName || 'Your Name'}
       </h1>
@@ -515,14 +534,14 @@ function SideBarHeader({ ctx }: { ctx: Ctx }) {
       <div style={{ fontSize: ctx.size - 1, color: '#444', marginTop: 3 }}>
         {contactParts(ctx.resume).join('  ·  ')}
       </div>
-    </header>
+    </ResumeHeader>
   );
 }
 
 function TechnicalHeader({ ctx }: { ctx: Ctx }) {
   const p = ctx.resume.personalInfo;
   return (
-    <header style={{ marginBottom: 10 }}>
+    <ResumeHeader ctx={ctx} style={{ marginBottom: 10 }}>
       <h1 style={{ fontSize: ctx.size + 14, fontWeight: 700, color: '#111', fontFamily: MONO, marginBottom: 1 }}>
         {p.fullName || 'Your Name'}
       </h1>
@@ -540,7 +559,7 @@ function TechnicalHeader({ ctx }: { ctx: Ctx }) {
           {ctx.resume.skills.slice(0, 12).map((s) => s.name).join(', ')}
         </div>
       )}
-    </header>
+    </ResumeHeader>
   );
 }
 
@@ -629,7 +648,7 @@ const LAYOUTS: Record<TemplateLayout, LayoutFn> = {
 
   creative: (ctx) => (
     <>
-      <header style={{ marginBottom: 10, borderLeft: `6px solid ${ctx.accent}`, paddingLeft: 12 }}>
+      <ResumeHeader ctx={ctx} style={{ marginBottom: 10, borderLeft: `6px solid ${ctx.accent}`, paddingLeft: 12 }}>
         <h1 style={{ fontSize: ctx.size + 14, fontWeight: 700, color: '#111', marginBottom: 2 }}>
           {ctx.resume.personalInfo.fullName || 'Your Name'}
         </h1>
@@ -639,7 +658,7 @@ const LAYOUTS: Record<TemplateLayout, LayoutFn> = {
           </div>
         )}
         <div style={{ fontSize: ctx.size - 1, color: '#444' }}>{contactParts(ctx.resume).join('  |  ')}</div>
-      </header>
+      </ResumeHeader>
       <SummaryBlock ctx={ctx} />
       <SkillsBlock ctx={ctx} mode="chips" />
       <ExperienceBlock ctx={ctx} />
@@ -738,7 +757,7 @@ const LAYOUTS: Record<TemplateLayout, LayoutFn> = {
 
   compact: (ctx) => (
     <>
-      <header style={{ marginBottom: 6 }}>
+      <ResumeHeader ctx={ctx} style={{ marginBottom: 6 }}>
         <h1 style={{ fontSize: ctx.size + 10, fontWeight: 700, color: '#111', marginBottom: 1 }}>
           {ctx.resume.personalInfo.fullName || 'Your Name'}
           {hasText(ctx.resume.personalInfo.title) && (
@@ -748,7 +767,7 @@ const LAYOUTS: Record<TemplateLayout, LayoutFn> = {
           )}
         </h1>
         <div style={{ fontSize: ctx.size - 1, color: '#444' }}>{contactParts(ctx.resume).join('  |  ')}</div>
-      </header>
+      </ResumeHeader>
       <SummaryBlock ctx={ctx} />
       <ExperienceBlock ctx={ctx} dateSide="right" maxRoles={3} />
       <SkillsBlock ctx={ctx} mode="inline" />
@@ -805,12 +824,6 @@ export default function ResumePreview({ resume, template }: ResumePreviewProps) 
         lineHeight: design.compact ? 1.4 : 1.5,
       }}
     >
-      {resume.personalInfo.photo && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-          <img src={resume.personalInfo.photo} alt="Resume photo"
-            style={{ width: 'auto', height: 'auto', maxWidth: 80, maxHeight: 100, objectFit: 'contain', flexShrink: 0 }} />
-        </div>
-      )}
       {LAYOUTS[layout](ctx)}
     </div>
   );

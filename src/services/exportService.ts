@@ -67,28 +67,30 @@ export async function exportToPDF(resume: Resume): Promise<void> {
   };
 
   const p = resume.personalInfo;
+  const headerWidth = p.photo ? usableW - 99 : usableW;
+  let photoBottom = y;
 
   if (p.photo) {
     const image = pdf.getImageProperties(p.photo);
-    const scale = Math.min(60 / image.width, 75 / image.height);
+    const scale = Math.min(84 / image.width, 72 / image.height);
     const width = image.width * scale;
     const height = image.height * scale;
     pdf.addImage(p.photo, 'JPEG', pageW - marginX - width, y, width, height);
-    y += height + 12;
+    photoBottom = y + height;
   }
 
   // ---- Header ----
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(20);
   pdf.setTextColor(17, 17, 17);
-  const nameLines = pdf.splitTextToSize(p.fullName || 'Your Name', usableW) as string[];
+  const nameLines = pdf.splitTextToSize(p.fullName || 'Your Name', headerWidth) as string[];
   writeLines(nameLines, 24);
 
   if (p.title) {
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(12);
     pdf.setTextColor(60, 60, 60);
-    const titleLines = pdf.splitTextToSize(p.title, usableW) as string[];
+    const titleLines = pdf.splitTextToSize(p.title, headerWidth) as string[];
     writeLines(titleLines, 16);
   }
 
@@ -97,10 +99,10 @@ export async function exportToPDF(resume: Resume): Promise<void> {
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(9);
     pdf.setTextColor(90, 90, 90);
-    const contactLines = pdf.splitTextToSize(contact, usableW) as string[];
+    const contactLines = pdf.splitTextToSize(contact, headerWidth) as string[];
     writeLines(contactLines, 12);
   }
-  y += 4;
+  y = Math.max(y, photoBottom) + 4;
 
   // ---- Summary ----
   if (resume.summary) {
