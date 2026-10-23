@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, FileText, Briefcase, GraduationCap, Wrench, FolderOpen,
   Award, Check, ChevronLeft, ChevronRight, Plus, Trash2, Workflow,
-  Download, Target, Loader2, Languages
+  Download, Target, Loader2, Languages, FileUp
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { createId, TEMPLATE_INFO } from '../types/resume';
@@ -12,6 +12,7 @@ import { exportToPDF, exportToTXT } from '../services/exportService';
 import { runAi } from '../services/aiService';
 import ResumePreview from '../components/ResumePreview';
 import TemplateThumbnail from '../components/TemplateThumbnail';
+import PdfImportDialog from '../components/PdfImportDialog';
 
 const TEMPLATE_KEYS = Object.keys(TEMPLATE_INFO) as TemplateType[];
 
@@ -151,6 +152,7 @@ function SkillsStep({ resume, update }: { resume: Resume; update: (u: Partial<Re
 export default function ResumeBuilder() {
   const { resumes, activeResumeId, createResume, updateResume, setActiveResume, setPage, addToast } = useResumeStore();
   const [step, setStep] = useState(0);
+  const [importOpen, setImportOpen] = useState(false);
 
   // Ensure we have an active resume
   useEffect(() => {
@@ -279,6 +281,11 @@ export default function ResumeBuilder() {
                   onChange={e => updateExp(exp.id, { company: e.target.value })} />
               </div>
               <div className="input-group">
+                <label className="input-label">Location</label>
+                <input className="input-field" placeholder="City, State or Country" value={exp.location}
+                  onChange={e => updateExp(exp.id, { location: e.target.value })} />
+              </div>
+              <div className="input-group">
                 <label className="input-label">Start Date</label>
                 <input className="input-field" type="month" value={exp.startDate}
                   onChange={e => updateExp(exp.id, { startDate: e.target.value })} />
@@ -364,6 +371,7 @@ export default function ResumeBuilder() {
             <div className="grid-2" style={{ gap: 12 }}>
               <div className="input-group"><label className="input-label">Degree <span>*</span></label><input className="input-field" placeholder="Bachelor of Science in Computer Science" value={edu.degree} onChange={e => update({ education: resume.education.map(ed => ed.id === edu.id ? { ...ed, degree: e.target.value } : ed) })} /></div>
               <div className="input-group"><label className="input-label">Institution <span>*</span></label><input className="input-field" placeholder="University of California" value={edu.institution} onChange={e => update({ education: resume.education.map(ed => ed.id === edu.id ? { ...ed, institution: e.target.value } : ed) })} /></div>
+              <div className="input-group"><label className="input-label">Location</label><input className="input-field" placeholder="City, State or Country" value={edu.location} onChange={e => update({ education: resume.education.map(ed => ed.id === edu.id ? { ...ed, location: e.target.value } : ed) })} /></div>
               <div className="input-group"><label className="input-label">Year</label><input className="input-field" placeholder="2024" value={edu.year} onChange={e => update({ education: resume.education.map(ed => ed.id === edu.id ? { ...ed, year: e.target.value } : ed) })} /></div>
               <div className="input-group"><label className="input-label">GPA (optional)</label><input className="input-field" placeholder="3.8" value={edu.gpa || ''} onChange={e => update({ education: resume.education.map(ed => ed.id === edu.id ? { ...ed, gpa: e.target.value } : ed) })} /></div>
             </div>
@@ -403,6 +411,7 @@ export default function ResumeBuilder() {
             <div className="grid-2 mb-3" style={{ gap: 12 }}>
               <div className="input-group"><label className="input-label">Project Name</label><input className="input-field" placeholder="My Awesome Project" value={proj.name} onChange={e => update({ projects: resume.projects.map(p => p.id === proj.id ? { ...p, name: e.target.value } : p) })} /></div>
               <div className="input-group"><label className="input-label">Technologies (comma-sep)</label><input className="input-field" placeholder="React, Node.js, AWS" value={proj.technologies.join(', ')} onChange={e => update({ projects: resume.projects.map(p => p.id === proj.id ? { ...p, technologies: e.target.value.split(',').map(t => t.trim()).filter(Boolean) } : p) })} /></div>
+              <div className="input-group"><label className="input-label">Project URL</label><input className="input-field" placeholder="github.com/username/project" value={proj.url || ''} onChange={e => update({ projects: resume.projects.map(p => p.id === proj.id ? { ...p, url: e.target.value } : p) })} /></div>
             </div>
             <div className="input-group mb-3"><label className="input-label">Description</label><textarea className="input-field" rows={2} placeholder="Brief description of the project..." value={proj.description} onChange={e => update({ projects: resume.projects.map(p => p.id === proj.id ? { ...p, description: e.target.value } : p) })} /></div>
             <div className="input-group"><label className="input-label">Results / Impact</label><input className="input-field" placeholder="Increased performance by 50%" value={proj.results} onChange={e => update({ projects: resume.projects.map(p => p.id === proj.id ? { ...p, results: e.target.value } : p) })} /></div>
@@ -514,6 +523,14 @@ export default function ResumeBuilder() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+      {/* Import an existing PDF resume into the builder */}
+      <div className="builder-topline">
+        <button className="btn btn-secondary btn-sm" onClick={() => setImportOpen(true)}>
+          <FileUp size={15} /> Upload a PDF resume
+        </button>
+        <span className="text-xs text-tertiary">Import an existing resume and edit it here. PDF only.</span>
+      </div>
+
       {/* Progress Steps */}
       <div className="step-rail" role="tablist" aria-label="Resume sections">
         {STEPS.map((s, i) => {
@@ -591,6 +608,8 @@ export default function ResumeBuilder() {
           </p>
         </div>
       </div>
+
+      <PdfImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </motion.div>
   );
 }

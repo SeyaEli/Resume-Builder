@@ -54,11 +54,16 @@
   /* Elevation & Depth */
   --glass-bg: #2E2923;
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 0px; 
+  --glass-blur: 0px;
+  --glass-saturate: 100%;
+  --glass-sheen: off;
+  --shell-blur: 0px;
+  --shell-fill: var(--bg-sidebar);
+  --surface-inner: 0 0 0 0 rgba(0, 0, 0, 0);
+  --glass-bg-hover: var(--bg-card-hover);
   /* Surface family: the theme engine rewrites these when a style is picked. */
   --radius-card: 12px;
   --surface-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.45), 0 12px 28px -12px rgba(0, 0, 0, 0.5);
-  --surface-inner: none;
   
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -3171,76 +3176,503 @@ table { max-width: 100%; }
   .surface-hint { display: block; }
 }
 /* ============================================
-   Surface style — shell character (authoritative, last so it wins)
-   Each style changes the sidebar, header and inputs too, not just cards,
-   so picking one is unmistakable.
+   Surface style - the WHOLE app follows one choice
+   Every panel, the shell, the inputs and the small chips all read the
+   same tokens, so switching the style reshapes the entire interface
+   instead of only some cards. Placed last on purpose: nothing above
+   can override it.
    ============================================ */
 
-/* Every panel paints the chosen fill, and the sidebar/header follow it. */
-.app-sidebar,
-.app-header {
-  background: var(--bg-sidebar);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+/* ---- 1. Every panel takes the chosen fill, radius and depth ---- */
+
+html[data-surface] .glass-card,
+html[data-surface] .stat-card,
+html[data-surface] .issue-card,
+html[data-surface] .template-card,
+html[data-surface] .modal-content,
+html[data-surface] .notice-card,
+html[data-surface] .upload-zone,
+html[data-surface] .theme-preview-card,
+html[data-surface] .sidebar-user,
+html[data-surface] .empty-state,
+html[data-surface] .chat-container,
+html[data-surface] .chat-input-area,
+html[data-surface] .chat-message,
+html[data-surface] .toast,
+html[data-surface] .import-count,
+html[data-surface] .import-note,
+html[data-surface] .tabs {
+  background: var(--panel-fill);
+  border-radius: var(--radius-card);
+  box-shadow: var(--surface-shadow), var(--surface-inner);
 }
 
-/* ---- Flat: hard edges, visible outlines, zero depth ---- */
-[data-surface='flat'] .glass-card,
-[data-surface='flat'] .stat-card {
+/* The shell: sidebar and header are panels too. */
+html[data-surface] .app-sidebar,
+html[data-surface] .app-header {
+  background: var(--shell-fill);
+  backdrop-filter: blur(var(--shell-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--shell-blur)) saturate(var(--glass-saturate));
+}
+
+/* Small elements: same radius and fill, but no heavy shadow. */
+html[data-surface] .btn,
+html[data-surface] .input-field,
+html[data-surface] .sidebar-item,
+html[data-surface] .tab-item,
+html[data-surface] .step-chip,
+html[data-surface] .keyword-tag,
+html[data-surface] .badge,
+html[data-surface] .mode-option,
+html[data-surface] .palette-option,
+html[data-surface] .surface-option {
+  border-radius: var(--radius-card);
+}
+
+/* Keep the fill on hover instead of swapping to a generic grey. */
+html[data-surface] .glass-card:hover,
+html[data-surface] .stat-card:hover,
+html[data-surface] .issue-card:hover,
+html[data-surface] .template-card:hover {
+  background: var(--glass-bg-hover, var(--bg-card-hover));
+}
+
+/* ---- 2. Flat: hard edges, visible outlines, zero depth ---- */
+
+html[data-surface='flat'] .glass-card,
+html[data-surface='flat'] .stat-card,
+html[data-surface='flat'] .issue-card,
+html[data-surface='flat'] .template-card,
+html[data-surface='flat'] .modal-content,
+html[data-surface='flat'] .notice-card,
+html[data-surface='flat'] .upload-zone,
+html[data-surface='flat'] .theme-preview-card,
+html[data-surface='flat'] .sidebar-user,
+html[data-surface='flat'] .chat-message,
+html[data-surface='flat'] .toast,
+html[data-surface='flat'] .app-sidebar,
+html[data-surface='flat'] .import-count,
+html[data-surface='flat'] .import-note,
+html[data-surface='flat'] .app-header {
   border: 1.5px solid var(--border-secondary);
   box-shadow: none;
 }
-[data-surface='flat'] .app-sidebar,
-[data-surface='flat'] .app-header {
-  border-color: var(--border-secondary);
+html[data-surface='flat'] .btn,
+html[data-surface='flat'] .input-field,
+html[data-surface='flat'] .sidebar-item,
+html[data-surface='flat'] .tab-item,
+html[data-surface='flat'] .step-chip,
+html[data-surface='flat'] .keyword-tag,
+html[data-surface='flat'] .badge {
+  border-radius: 0;
+  box-shadow: none;
 }
-[data-surface='flat'] .sidebar-nav-item.active {
+html[data-surface='flat'] .sidebar-item.active {
   border-left: 3px solid var(--accent-primary);
   border-radius: 0;
 }
+html[data-surface='flat'] .app-content { background-image: none; }
 
-/* ---- Elevated: the page sits back, panels float well above it ---- */
-[data-surface='elevated'] .app-content {
-  background-image: none;
+/* ---- 3. Elevated: the page sits back, panels float above it ---- */
+
+html[data-surface='elevated'] .app-content { background-image: none; }
+
+/* ---- 4. Glass: real frosted glass ----
+   What makes glass read as glass:
+     - the backdrop is blurred AND saturated, so colours behind deepen
+     - a diagonal light streak crosses the pane
+     - a lit top rim and a dark bottom rim give it thickness
+     - the fill fades from bright (top-left) to dim (bottom-right)
+   Without the saturation and the sheen it just looks like grey haze. */
+
+html[data-surface='glass'] .glass-card,
+html[data-surface='glass'] .stat-card,
+html[data-surface='glass'] .issue-card,
+html[data-surface='glass'] .template-card,
+html[data-surface='glass'] .modal-content,
+html[data-surface='glass'] .notice-card,
+html[data-surface='glass'] .upload-zone,
+html[data-surface='glass'] .theme-preview-card,
+html[data-surface='glass'] .sidebar-user,
+html[data-surface='glass'] .chat-message,
+html[data-surface='glass'] .toast,
+html[data-surface='glass'] .import-count,
+html[data-surface='glass'] .import-note,
+html[data-surface='glass'] .tabs {
+  background-color: transparent;
+  /* Layer 1: the light streak. Layer 2: the tinted pane fill. */
+  background-image:
+    linear-gradient(108deg,
+      rgba(255, 255, 255, 0) 26%,
+      rgba(255, 255, 255, 0.11) 42%,
+      rgba(255, 255, 255, 0.02) 56%,
+      rgba(255, 255, 255, 0) 72%),
+    var(--panel-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+html[data-theme='light'][data-surface='glass'] .glass-card,
+html[data-theme='light'][data-surface='glass'] .stat-card,
+html[data-theme='light'][data-surface='glass'] .issue-card,
+html[data-theme='light'][data-surface='glass'] .template-card,
+html[data-theme='light'][data-surface='glass'] .modal-content,
+html[data-theme='light'][data-surface='glass'] .notice-card,
+html[data-theme='light'][data-surface='glass'] .upload-zone,
+html[data-theme='light'][data-surface='glass'] .theme-preview-card,
+html[data-theme='light'][data-surface='glass'] .sidebar-user,
+html[data-theme='light'][data-surface='glass'] .chat-message,
+html[data-theme='light'][data-surface='glass'] .toast,
+html[data-theme='light'][data-surface='glass'] .import-count,
+html[data-theme='light'][data-surface='glass'] .import-note,
+html[data-theme='light'][data-surface='glass'] .tabs {
+  background-image:
+    linear-gradient(108deg,
+      rgba(255, 255, 255, 0) 26%,
+      rgba(255, 255, 255, 0.75) 42%,
+      rgba(255, 255, 255, 0.2) 56%,
+      rgba(255, 255, 255, 0) 72%),
+    var(--panel-fill);
+}
+/* A brighter streak when the pointer is over the pane. */
+html[data-surface='glass'] .glass-card:hover {
+  background-image:
+    linear-gradient(108deg,
+      rgba(255, 255, 255, 0) 22%,
+      rgba(255, 255, 255, 0.18) 40%,
+      rgba(255, 255, 255, 0.04) 54%,
+      rgba(255, 255, 255, 0) 70%),
+    var(--panel-fill);
+}
+/* Glass buttons get a lit top edge like the panes. */
+html[data-surface='glass'] .btn {
+  border-radius: var(--radius-card);
+  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+html[data-theme='light'][data-surface='glass'] .btn {
+  box-shadow: 0 6px 20px -10px rgba(16, 24, 40, 0.3), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+html[data-surface='glass'] .input-field {
+  background-color: transparent;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid var(--glass-border);
 }
 
-/* ---- Glass: the whole chrome is frosted panes ---- */
-[data-surface='glass'] .app-sidebar,
-[data-surface='glass'] .app-header {
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-}
-[data-surface='glass'] .glass-card {
-  background-image: var(--panel-fill);
-}
-[data-surface='glass'] .btn-primary {
-  box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
+/* ---- 5. Neomorph: everything pressed out of one soft slab ---- */
 
-/* ---- Neomorph: everything pressed out of one soft slab ---- */
-[data-surface='neomorph'] .app-content {
-  background-image: radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.045), transparent 55%);
+html[data-surface='neomorph'] .app-content {
+  background-image: radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.05), transparent 55%);
 }
-[data-surface='neomorph'] .glass-card {
+html[data-surface='neomorph'] .glass-card,
+html[data-surface='neomorph'] .stat-card,
+html[data-surface='neomorph'] .issue-card,
+html[data-surface='neomorph'] .template-card,
+html[data-surface='neomorph'] .modal-content,
+html[data-surface='neomorph'] .notice-card,
+html[data-surface='neomorph'] .upload-zone,
+html[data-surface='neomorph'] .theme-preview-card,
+html[data-surface='neomorph'] .sidebar-user,
+html[data-surface='neomorph'] .chat-message,
+html[data-surface='neomorph'] .toast,
+html[data-surface='neomorph'] .tabs,
+html[data-surface='neomorph'] .app-sidebar,
+html[data-surface='neomorph'] .import-count,
+html[data-surface='neomorph'] .import-note,
+html[data-surface='neomorph'] .app-header {
   border-color: transparent;
-  box-shadow: 14px 14px 34px rgba(0, 0, 0, 0.72), -10px -10px 26px rgba(255, 255, 255, 0.07),
-    inset 3px 3px 8px rgba(0, 0, 0, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.06);
+  box-shadow: var(--surface-shadow), var(--surface-inner);
 }
-html[data-theme='light'][data-surface='neomorph'] .glass-card {
-  box-shadow: 14px 14px 34px rgba(16, 24, 40, 0.2), -10px -10px 26px rgba(255, 255, 255, 1),
-    inset 3px 3px 8px rgba(16, 24, 40, 0.11), inset -3px -3px 8px rgba(255, 255, 255, 0.95);
-}
-[data-surface='neomorph'] .glass-card:hover {
+html[data-surface='neomorph'] .glass-card:hover {
   transform: translateY(-2px);
 }
-[data-surface='neomorph'] .btn,
-[data-surface='neomorph'] .input-field,
-[data-surface='neomorph'] .sidebar-nav-item {
-  border-radius: var(--radius-card);
-  box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.55), -3px -3px 9px rgba(255, 255, 255, 0.05);
+html[data-surface='neomorph'] .btn,
+html[data-surface='neomorph'] .input-field,
+html[data-surface='neomorph'] .sidebar-item,
+html[data-surface='neomorph'] .tab-item,
+html[data-surface='neomorph'] .step-chip,
+html[data-surface='neomorph'] .keyword-tag,
+html[data-surface='neomorph'] .badge,
+html[data-surface='neomorph'] .mode-option,
+html[data-surface='neomorph'] .palette-option,
+html[data-surface='neomorph'] .surface-option {
+  box-shadow: var(--surface-shadow);
 }
-html[data-theme='light'][data-surface='neomorph'] .btn,
-html[data-theme='light'][data-surface='neomorph'] .input-field,
-html[data-theme='light'][data-surface='neomorph'] .sidebar-nav-item {
-  box-shadow: 5px 5px 12px rgba(16, 24, 40, 0.14), -3px -3px 9px rgba(255, 255, 255, 0.9);
+
+/* ---- 6. Keep the accent glow on hover where the style has depth ---- */
+
+html[data-surface='elevated'] .stat-card:hover,
+html[data-surface='glass'] .stat-card:hover {
+  box-shadow: var(--shadow-glow);
+}
+html[data-surface='elevated'] .glass-card:hover,
+html[data-surface='glass'] .glass-card:hover {
+  border-color: var(--border-secondary);
+}
+/* ============================================
+   Surface style - mobile and small screens
+   A blurred backdrop is expensive to redraw while a drawer slides or a
+   page scrolls, and a see-through drawer over moving content is hard to
+   read. On small screens the chrome becomes more opaque and the blur
+   lighter, so the look survives without the jank.
+   ============================================ */
+
+@media (max-width: 1024px) {
+  /* The drawer covers the page, so it needs to be readable on its own. */
+  html[data-surface='glass'] .app-sidebar {
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+  }
+  html[data-surface='glass'] .app-header {
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+  }
+  /* Fewer, larger blur radii: one pass instead of two. */
+  html[data-surface='glass'] .glass-card,
+  html[data-surface='glass'] .stat-card,
+  html[data-surface='glass'] .issue-card,
+  html[data-surface='glass'] .template-card,
+  html[data-surface='glass'] .sidebar-user,
+  html[data-surface='glass'] .theme-preview-card {
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Keep the streak, drop the expensive part of the depth. */
+  html[data-surface='glass'] .glass-card,
+  html[data-surface='glass'] .stat-card,
+  html[data-surface='glass'] .issue-card,
+  html[data-surface='glass'] .template-card,
+  html[data-surface='glass'] .modal-content,
+  html[data-surface='glass'] .notice-card {
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+  }
+  /* Neomorph's far shadow would push content off a narrow screen. */
+  html[data-surface='neomorph'] .glass-card,
+  html[data-surface='neomorph'] .stat-card,
+  html[data-surface='neomorph'] .issue-card,
+  html[data-surface='neomorph'] .template-card {
+    box-shadow: 6px 6px 16px rgba(0, 0, 0, 0.5), -5px -5px 14px rgba(255, 255, 255, 0.05),
+      var(--surface-inner);
+  }
+  html[data-theme='light'][data-surface='neomorph'] .glass-card,
+  html[data-theme='light'][data-surface='neomorph'] .stat-card,
+  html[data-theme='light'][data-surface='neomorph'] .issue-card,
+  html[data-theme='light'][data-surface='neomorph'] .template-card {
+    box-shadow: 6px 6px 16px rgba(16, 24, 40, 0.16), -5px -5px 14px rgba(255, 255, 255, 0.95),
+      var(--surface-inner);
+  }
+  /* Flat keeps its outlines but gets slightly rounder corners so the
+     panels do not look like they are about to cut the screen. */
+  html[data-surface='flat'] .glass-card,
+  html[data-surface='flat'] .stat-card,
+  html[data-surface='flat'] .modal-content {
+    border-radius: 4px;
+  }
+}
+
+/* Touch devices never hover: the lift is wasted work there. */
+@media (hover: none) and (pointer: coarse) {
+  html[data-surface='neomorph'] .glass-card:hover { transform: none; }
+  html[data-surface='glass'] .glass-card:hover {
+    background-image: linear-gradient(108deg,
+      rgba(255, 255, 255, 0) 26%,
+      rgba(255, 255, 255, 0.11) 42%,
+      rgba(255, 255, 255, 0.02) 56%,
+      rgba(255, 255, 255, 0) 72%),
+      var(--panel-fill);
+  }
+}
+
+/* ============================================
+   PDF import dialog
+   Added last on purpose: the surface layer above owns how panels look, so
+   these rules only add layout and the few colours the surface tokens do not
+   carry. Every panel here reads the same surface variables, so the dialog
+   follows Flat / Elevated / Glass / Neomorph like the rest of the app.
+   ============================================ */
+
+.import-dialog-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+}
+
+/* The real file input is driven by the drop zone, so it stays out of sight -
+   but never `display: none`, which some browsers refuse to open. */
+.hidden-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.import-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: var(--space-4);
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--accent-subtle);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.import-note svg { flex: 0 0 auto; margin-top: 1px; color: var(--accent-primary); }
+
+.import-reading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+}
+
+.import-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: var(--color-success);
+}
+
+.import-success svg { flex: 0 0 auto; margin-top: 2px; }
+
+.import-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: var(--space-4);
+}
+
+.import-count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  min-width: 0;
+}
+
+.import-count-icon {
+  flex: 0 0 auto;
+  display: flex;
+  color: var(--accent-primary);
+}
+
+.import-count-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.import-count-value {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-count-value.is-empty {
+  font-weight: 500;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.import-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: var(--space-4);
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: var(--color-warning);
+}
+
+.import-warning svg { flex: 0 0 auto; margin-top: 2px; }
+
+.import-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: var(--color-danger);
+}
+
+.import-error svg { flex: 0 0 auto; margin-top: 2px; }
+.import-error p { line-height: 1.6; }
+
+/* The dialog's inner panels follow the chosen surface style. Glass and
+   Neomorph carry their own depth, so these only borrow the fill, the rim
+   and the blur the engine publishes for the current style. */
+html[data-surface] .import-count,
+html[data-surface] .import-note {
+  background: var(--panel-fill);
+  border: 1px solid var(--glass-border, var(--border-primary));
+  border-radius: var(--radius-card);
+  box-shadow: var(--surface-shadow), var(--surface-inner);
+  backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
+}
+
+html[data-surface] .import-success,
+html[data-surface] .import-warning,
+html[data-surface] .import-error {
+  backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 0px)) saturate(var(--glass-saturate, 100%));
+}
+
+/* ---- Small screens ---- */
+
+@media (max-width: 640px) {
+  .modal-content { padding: var(--space-6); }
+  .import-summary-grid { grid-template-columns: minmax(0, 1fr); }
+  .import-reading { padding: var(--space-8) var(--space-4); }
+  .import-note { font-size: 11px; }
+}
+/* ---- Builder: PDF import topline ---- */
+
+.builder-topline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-primary);
+  background: var(--bg-tertiary);
+}
+
+@media (max-width: 640px) {
+  .builder-topline { gap: 8px; padding: 10px 12px; }
+  .builder-topline .btn { width: 100%; justify-content: center; }
 }

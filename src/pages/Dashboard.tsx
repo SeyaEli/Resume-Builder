@@ -3,8 +3,10 @@ import {
   FileText, Target, Briefcase, Mail, Plus, Upload,
   MessageSquare, FileEdit, LayoutDashboard, ArrowRight, Clock, Zap
 } from 'lucide-react';
+import { useState } from 'react';
 import { useResumeStore } from '../stores/resumeStore';
 import { analyzeResume } from '../services/atsScorer';
+import PdfImportDialog from '../components/PdfImportDialog';
 import { TEMPLATE_INFO } from '../types/resume';
 
 const fadeInUp = {
@@ -18,6 +20,7 @@ const stagger = {
 
 export default function Dashboard() {
   const { resumes, coverLetters, jobDescriptions, setPage, createResume, setActiveResume } = useResumeStore();
+  const [importOpen, setImportOpen] = useState(false);
 
   // The average is computed from the same checks the ATS Checker runs, so the
   // two screens never disagree.
@@ -33,7 +36,7 @@ export default function Dashboard() {
 
   const quickActions = [
     { label: 'Create New Resume', desc: 'Start building an ATS-optimized resume', icon: <Plus size={22} />, page: 'builder' as const, color: 'var(--accent-primary)' },
-    { label: 'Upload Resume', desc: 'Import and optimize an existing resume', icon: <Upload size={22} />, page: 'builder' as const, color: 'var(--accent-primary)' },
+    { label: 'Upload Resume', desc: 'Import a PDF resume and edit it here', icon: <Upload size={22} />, page: 'builder' as const, color: 'var(--accent-primary)' },
     { label: 'ATS Score Check', desc: 'Scan your resume for ATS compatibility', icon: <Target size={22} />, page: 'ats-checker' as const, color: 'var(--accent-primary)' },
     { label: 'Match to Job', desc: 'Tailor your resume to a job description', icon: <Briefcase size={22} />, page: 'job-match' as const, color: 'var(--accent-primary)' },
     { label: 'Cover Letter', desc: 'Generate a professional cover letter', icon: <FileEdit size={22} />, page: 'cover-letter' as const, color: 'var(--accent-primary)' },
@@ -97,6 +100,8 @@ export default function Dashboard() {
               onClick={() => {
                 if (action.label === 'Create New Resume') {
                   handleNewResume();
+                } else if (action.label === 'Upload Resume') {
+                  setImportOpen(true);
                 } else {
                   setPage(action.page);
                 }
@@ -189,6 +194,8 @@ export default function Dashboard() {
           </div>
         )}
       </motion.div>
+      {/* Upload a PDF resume and open it in the builder */}
+      <PdfImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </motion.div>
   );
 }

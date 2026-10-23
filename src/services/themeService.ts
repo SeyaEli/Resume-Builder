@@ -147,6 +147,12 @@ export interface SurfaceDef {
   innerShadowLight: string;
   /** Backdrop blur for glass. */
   blur: string;
+  /** Backdrop saturation: real glass deepens the colours behind it. */
+  saturate: string;
+  /** A diagonal light streak painted across a glass pane ('on' or null). */
+  sheen: string | null;
+  /** Blur used by the sidebar and header, so the chrome frosts as well. */
+  shellBlur: string;
 }
 
 export const SURFACES: SurfaceDef[] = [
@@ -159,11 +165,18 @@ export const SURFACES: SurfaceDef[] = [
     cardBgLight: null,
     border: 'rgba(255, 255, 255, 0.22)',
     borderLight: 'rgba(16, 24, 40, 0.2)',
-    shadow: 'none',
-    shadowLight: 'none',
-    innerShadow: 'none',
-    innerShadowLight: 'none',
+    /* Not the keyword 'none': two shadows are combined as
+       "shadow, inner", and "none, none" is invalid CSS, which would
+       make the browser drop the whole declaration. A transparent
+       shadow says the same thing and stays valid. */
+    shadow: '0 0 0 0 rgba(0, 0, 0, 0)',
+    shadowLight: '0 0 0 0 rgba(0, 0, 0, 0)',
+    innerShadow: '0 0 0 0 rgba(0, 0, 0, 0)',
+    innerShadowLight: '0 0 0 0 rgba(0, 0, 0, 0)',
     blur: '0px',
+    saturate: '100%',
+    sheen: null,
+    shellBlur: '0px',
   },
   {
     id: 'elevated',
@@ -179,21 +192,31 @@ export const SURFACES: SurfaceDef[] = [
     innerShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.07)',
     innerShadowLight: 'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
     blur: '0px',
+    saturate: '100%',
+    sheen: null,
+    shellBlur: '0px',
   },
   {
     id: 'glass',
     name: 'Glass',
-    hint: 'See-through frosted panes with a bright edge',
-    radius: '18px',
-    cardBg: 'linear-gradient(150deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))',
-    cardBgLight: 'linear-gradient(150deg, rgba(255,255,255,0.85), rgba(255,255,255,0.45))',
-    border: 'rgba(255, 255, 255, 0.28)',
-    borderLight: 'rgba(255, 255, 255, 0.95)',
-    shadow: '0 10px 40px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-    shadowLight: '0 10px 40px -12px rgba(16, 24, 40, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
-    innerShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.08)',
-    innerShadowLight: 'inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(16, 24, 40, 0.06)',
-    blur: '22px',
+    hint: 'Real frosted glass - you see through it, with a lit rim',
+    radius: '20px',
+    /* Real glass is not flat: it catches light top-left and darkens
+       bottom-right, so the pane reads as a curved surface. */
+    cardBg: 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 42%, rgba(255,255,255,0.02) 100%)',
+    cardBgLight: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.62) 45%, rgba(255,255,255,0.42) 100%)',
+    border: 'rgba(255, 255, 255, 0.22)',
+    borderLight: 'rgba(255, 255, 255, 0.9)',
+    /* A soft cast shadow below, a lit top edge, and a dark bottom edge:
+       that lit-top / dark-bottom pair is what sells the thickness. */
+    shadow: '0 2px 6px -2px rgba(0, 0, 0, 0.45), 0 16px 40px -16px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.42), inset 0 -1px 0 rgba(0, 0, 0, 0.22)',
+    shadowLight: '0 2px 6px -2px rgba(16, 24, 40, 0.1), 0 16px 40px -18px rgba(16, 24, 40, 0.28), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(16, 24, 40, 0.08)',
+    innerShadow: 'inset 1px 1px 0 rgba(255, 255, 255, 0.28), inset -1px -1px 0 rgba(255, 255, 255, 0.06)',
+    innerShadowLight: 'inset 1px 1px 0 rgba(255, 255, 255, 1), inset -1px -1px 0 rgba(16, 24, 40, 0.05)',
+    blur: '26px',
+    saturate: '190%',
+    sheen: 'on',
+    shellBlur: '34px',
   },
   {
     id: 'neomorph',
@@ -209,6 +232,9 @@ export const SURFACES: SurfaceDef[] = [
     innerShadow: 'inset 3px 3px 8px rgba(0, 0, 0, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.06)',
     innerShadowLight: 'inset 3px 3px 8px rgba(16, 24, 40, 0.11), inset -3px -3px 8px rgba(255, 255, 255, 0.95)',
     blur: '0px',
+    saturate: '100%',
+    sheen: null,
+    shellBlur: '0px',
   },
 ];
 
@@ -290,12 +316,21 @@ export function applyTheme(mode: 'dark' | 'light', palette: PaletteId, surface: 
   s.setProperty('--surface-shadow', isLight ? surf.shadowLight : surf.shadow);
   s.setProperty('--surface-inner', isLight ? surf.innerShadowLight : surf.innerShadow);
   s.setProperty('--glass-blur', surf.blur);
+  s.setProperty('--glass-saturate', surf.saturate);
+  s.setProperty('--glass-sheen', surf.sheen ?? 'off');
+  s.setProperty('--shell-blur', surf.shellBlur);
   s.setProperty('--glass-bg', isLight ? (surf.cardBgLight ?? 'rgba(255,252,245,0.92)') : (surf.cardBg ?? 'rgba(255,255,255,0.04)'));
   // The fill every panel actually paints with. Glass differs strongly here.
   s.setProperty('--panel-fill', isLight ? (surf.cardBgLight ?? 'var(--bg-card)') : (surf.cardBg ?? 'var(--bg-card)'));
   // Hover keeps the surface's own fill, lightened a touch instead of replaced.
   s.setProperty('--glass-bg-hover', surf.cardBg ? (isLight ? surf.cardBgLight : surf.cardBg) : 'var(--bg-card-hover)');
   s.setProperty('--glass-border', isLight ? (surf.borderLight ?? 'rgba(120,100,70,0.18)') : (surf.border ?? 'rgba(255,255,255,0.1)'));
+  // The sidebar and header fill. Glass keeps it translucent so the blur
+  // behind the chrome is actually visible; every other style is solid.
+  s.setProperty(
+    '--shell-fill',
+    surf.blur !== '0px' ? rgba(bg.bgSidebar, isLight ? 0.7 : 0.62) : bg.bgSidebar,
+  );
   // A tinted hairline so panels keep a little of the accent's colour.
   s.setProperty('--border-primary', isLight ? rgba(accent, 0.14) : rgba(accent, 0.1));
   s.setProperty('--border-secondary', isLight ? rgba(accent, 0.2) : rgba(accent, 0.16));

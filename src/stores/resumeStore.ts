@@ -30,6 +30,7 @@ interface ResumeState {
   // Actions
   setPage: (page: AppPage) => void;
   createResume: () => string;
+  addResume: (resume: Resume) => string;
   updateResume: (id: string, updates: Partial<Resume>) => void;
   deleteResume: (id: string) => void;
   setActiveResume: (id: string) => void;
@@ -45,7 +46,8 @@ interface ResumeState {
   getActiveResume: () => Resume | undefined;
 }
 
-// Sample resume so dashboard isn't empty
+// Legacy sample data retained only so v4 can recognize and remove old demo
+// values from resumes that users edited before the blank-start behavior.
 const sampleResume: Resume = {
   id: 'sample-1',
   personalInfo: {
@@ -148,11 +150,113 @@ const sampleResume: Resume = {
   },
 };
 
+/**
+ * Versions before v4 opened the app with `sampleResume` selected. If someone
+ * edited that record, any fields they did not visit stayed behind as if they
+ * had entered them (for example Austin, TX or the CloudScale GitHub URL).
+ *
+ * Only scrub values that still exactly match the legacy sample, and only from
+ * its stable id. User-created and imported resumes are never touched.
+ */
+const removeLegacySampleValues = (resume: Resume): Resume => {
+  if (resume.id !== sampleResume.id) return resume;
+
+  const clear = (value: string, sampleValue: string) => value === sampleValue ? '' : value;
+  const sameList = (values: string[], sampleValues: string[]) =>
+    values.length === sampleValues.length && values.every((value, index) => value === sampleValues[index]);
+
+  const experience = resume.experience
+    .map((entry) => {
+      const sample = sampleResume.experience.find((candidate) => candidate.id === entry.id);
+      if (!sample) return entry;
+      return {
+        ...entry,
+        jobTitle: clear(entry.jobTitle, sample.jobTitle),
+        company: clear(entry.company, sample.company),
+        location: clear(entry.location, sample.location),
+        startDate: clear(entry.startDate, sample.startDate),
+        endDate: clear(entry.endDate, sample.endDate),
+        current: entry.current,
+        bullets: entry.bullets.filter((bullet) => !sample.bullets.includes(bullet)),
+      };
+    })
+    .filter((entry) => entry.jobTitle || entry.company || entry.location || entry.startDate || entry.endDate || entry.bullets.length);
+
+  const education = resume.education
+    .map((entry) => {
+      const sample = sampleResume.education.find((candidate) => candidate.id === entry.id);
+      if (!sample) return entry;
+      return {
+        ...entry,
+        degree: clear(entry.degree, sample.degree),
+        institution: clear(entry.institution, sample.institution),
+        location: clear(entry.location, sample.location),
+        year: clear(entry.year, sample.year),
+        gpa: clear(entry.gpa || '', sample.gpa || ''),
+        honors: clear(entry.honors || '', sample.honors || ''),
+      };
+    })
+    .filter((entry) => entry.degree || entry.institution || entry.location || entry.year || entry.gpa || entry.honors);
+
+  const projects = resume.projects
+    .map((entry) => {
+      const sample = sampleResume.projects.find((candidate) => candidate.id === entry.id);
+      if (!sample) return entry;
+      return {
+        ...entry,
+        name: clear(entry.name, sample.name),
+        description: clear(entry.description, sample.description),
+        results: clear(entry.results, sample.results),
+        url: clear(entry.url || '', sample.url || ''),
+        technologies: sameList(entry.technologies, sample.technologies) ? [] : entry.technologies,
+      };
+    })
+    .filter((entry) => entry.name || entry.description || entry.results || entry.url || entry.technologies.length);
+
+  return {
+    ...resume,
+    personalInfo: {
+      fullName: clear(resume.personalInfo.fullName, sampleResume.personalInfo.fullName),
+      email: clear(resume.personalInfo.email, sampleResume.personalInfo.email),
+      phone: clear(resume.personalInfo.phone, sampleResume.personalInfo.phone),
+      location: clear(resume.personalInfo.location, sampleResume.personalInfo.location),
+      linkedin: clear(resume.personalInfo.linkedin, sampleResume.personalInfo.linkedin),
+      portfolio: clear(resume.personalInfo.portfolio, sampleResume.personalInfo.portfolio),
+      title: clear(resume.personalInfo.title, sampleResume.personalInfo.title),
+    },
+    summary: clear(resume.summary, sampleResume.summary),
+    experience,
+    education,
+    skills: resume.skills.filter((entry) => {
+      const sample = sampleResume.skills.find((candidate) => candidate.id === entry.id);
+      return !sample || entry.name !== sample.name || entry.category !== sample.category || entry.level !== sample.level;
+    }),
+    projects,
+    certifications: resume.certifications.filter((entry) => {
+      const sample = sampleResume.certifications.find((candidate) => candidate.id === entry.id);
+      return !sample || entry.name !== sample.name || entry.issuer !== sample.issuer || entry.date !== sample.date;
+    }),
+    languages: resume.languages.filter((entry) => {
+      const sample = sampleResume.languages.find((candidate) => candidate.id === entry.id);
+      return !sample || entry.name !== sample.name || entry.proficiency !== sample.proficiency;
+    }),
+    awards: resume.awards.filter((entry) => {
+      const sample = sampleResume.awards.find((candidate) => candidate.id === entry.id);
+      return !sample || entry.name !== sample.name || entry.issuer !== sample.issuer || entry.date !== sample.date || entry.description !== sample.description;
+    }),
+    metadata: {
+      ...resume.metadata,
+      targetJob: clear(resume.metadata.targetJob || '', sampleResume.metadata.targetJob || ''),
+      name: clear(resume.metadata.name, sampleResume.metadata.name) || 'Untitled Resume',
+    },
+  };
+};
+
 export const useResumeStore = create<ResumeState>()(
   persist(
     (set, get) => ({
-      resumes: [sampleResume],
-      activeResumeId: sampleResume.id,
+      resumes: [],
+      activeResumeId: null,
       atsAnalysis: null,
       jobDescriptions: [],
       activeJobMatch: null,
@@ -181,6 +285,16 @@ export const useResumeStore = create<ResumeState>()(
           activeResumeId: newResume.id,
         }));
         return newResume.id;
+      },
+
+      // Used by the PDF importer: the resume arrives already filled in, so it
+      // is added as-is and becomes the active one.
+      addResume: (resume) => {
+        set((state) => ({
+          resumes: [...state.resumes, resume],
+          activeResumeId: resume.id,
+        }));
+        return resume.id;
       },
 
       updateResume: (id, updates) =>
@@ -233,7 +347,7 @@ export const useResumeStore = create<ResumeState>()(
     }),
     {
       name: 'ats-resume-platform',
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
       // Older saves have no palette (and no 'system' mode). Fill them in
       // instead of dropping the user's settings on the floor.
@@ -245,6 +359,9 @@ export const useResumeStore = create<ResumeState>()(
             palette: 'amber',
             surface: 'elevated',
           } as UserPreferences;
+        }
+        if (version < 4 && state.resumes) {
+          state.resumes = state.resumes.map(removeLegacySampleValues);
         }
         return state as ResumeState;
       },
