@@ -3,6 +3,7 @@
 // ============================================
 
 export interface PersonalInfo {
+  photo?: string;
   fullName: string;
   email: string;
   phone: string;

@@ -13,6 +13,7 @@ import { runAi } from '../services/aiService';
 import ResumePreview from '../components/ResumePreview';
 import TemplateThumbnail from '../components/TemplateThumbnail';
 import PdfImportDialog from '../components/PdfImportDialog';
+import ResumePhotoUpload from '../components/ResumePhotoUpload';
 
 const TEMPLATE_KEYS = Object.keys(TEMPLATE_INFO) as TemplateType[];
 
@@ -153,6 +154,7 @@ export default function ResumeBuilder() {
   const { resumes, activeResumeId, createResume, updateResume, setActiveResume, setPage, addToast } = useResumeStore();
   const [step, setStep] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
 
   // Ensure we have an active resume
   useEffect(() => {
@@ -172,6 +174,8 @@ export default function ResumeBuilder() {
   const renderPersonalInfo = () => (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-bold">Personal Information</h3>
+      <ResumePhotoUpload key={resume.id} personalInfo={resume.personalInfo}
+        onChange={photo => update({ personalInfo: { ...resume.personalInfo, photo } })} />
       <div className="grid-2" style={{ gap: 16 }}>
         {[
           { key: 'fullName' as const, label: 'Full Name', placeholder: 'John Doe', required: true },
@@ -196,7 +200,6 @@ export default function ResumeBuilder() {
     </div>
   );
 
-  const [aiBusy, setAiBusy] = useState(false);
 
   const handleAiSummary = async () => {
     setAiBusy(true);

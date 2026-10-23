@@ -805,6 +805,12 @@ export default function ResumePreview({ resume, template }: ResumePreviewProps) 
         lineHeight: design.compact ? 1.4 : 1.5,
       }}
     >
+      {resume.personalInfo.photo && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+          <img src={resume.personalInfo.photo} alt="Resume photo" width={80} height={80}
+            style={{ objectFit: 'cover', flexShrink: 0 }} />
+        </div>
+      )}
       {LAYOUTS[layout](ctx)}
     </div>
   );

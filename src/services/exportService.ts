@@ -10,7 +10,7 @@ function formatDate(date: string): string {
 }
 
 // ===== PDF Export — real selectable text (ATS-safe, re-uploadable) =====
-// Single-column, plain Helvetica, no images. Everything written with
+// Single-column, plain Helvetica, with an optional profile photo. Text is written with
 // pdf.text() so readers, ATS parsers and our own PDF importer see words.
 export async function exportToPDF(resume: Resume): Promise<void> {
   const pdf = new jsPDF({ unit: 'pt', format: 'letter', orientation: 'portrait' });
@@ -67,6 +67,11 @@ export async function exportToPDF(resume: Resume): Promise<void> {
   };
 
   const p = resume.personalInfo;
+
+  if (p.photo) {
+    pdf.addImage(p.photo, 'JPEG', pageW - marginX - 60, y, 60, 60);
+    y += 72;
+  }
 
   // ---- Header ----
   pdf.setFont('helvetica', 'bold');
