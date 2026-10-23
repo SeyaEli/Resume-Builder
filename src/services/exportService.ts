@@ -30,7 +30,7 @@ export async function exportToPDF(resume: Resume): Promise<void> {
     }
   };
 
-  const writeLines = (lines: string[], fontSize: number, lineGap: number) => {
+  const writeLines = (lines: string[], lineGap: number) => {
     for (const line of lines) {
       ensureSpace(lineGap);
       pdf.text(line, marginX, y);
@@ -49,7 +49,7 @@ export async function exportToPDF(resume: Resume): Promise<void> {
     pdf.setFontSize(fontSize);
     pdf.setTextColor(color[0], color[1], color[2]);
     const lines = pdf.splitTextToSize(text, usableW) as string[];
-    writeLines(lines, fontSize, gap);
+    writeLines(lines, gap);
   };
 
   const sectionTitle = (title: string) => {
@@ -73,14 +73,14 @@ export async function exportToPDF(resume: Resume): Promise<void> {
   pdf.setFontSize(20);
   pdf.setTextColor(17, 17, 17);
   const nameLines = pdf.splitTextToSize(p.fullName || 'Your Name', usableW) as string[];
-  writeLines(nameLines, 20, 24);
+  writeLines(nameLines, 24);
 
   if (p.title) {
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(12);
     pdf.setTextColor(60, 60, 60);
     const titleLines = pdf.splitTextToSize(p.title, usableW) as string[];
-    writeLines(titleLines, 12, 16);
+    writeLines(titleLines, 16);
   }
 
   const contact = [p.email, p.phone, p.location, p.linkedin, p.portfolio].filter(Boolean).join(' | ');
@@ -89,7 +89,7 @@ export async function exportToPDF(resume: Resume): Promise<void> {
     pdf.setFontSize(9);
     pdf.setTextColor(90, 90, 90);
     const contactLines = pdf.splitTextToSize(contact, usableW) as string[];
-    writeLines(contactLines, 9, 12);
+    writeLines(contactLines, 12);
   }
   y += 4;
 
