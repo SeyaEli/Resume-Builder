@@ -3676,3 +3676,130 @@ html[data-surface] .import-error {
   .builder-topline { gap: 8px; padding: 10px 12px; }
   .builder-topline .btn { width: 100%; justify-content: center; }
 }
+
+/* Career coach: readable messages take precedence over surface decoration. */
+html[data-surface] .career-chat .chat-container {
+  height: min(780px, calc(100dvh - 220px));
+  min-height: 360px;
+  max-height: none;
+  background: var(--bg-card);
+  border-radius: inherit;
+  box-shadow: none;
+}
+.career-chat .chat-messages {
+  position: relative;
+  min-height: 0;
+  padding: 28px max(24px, calc((100% - 820px) / 2));
+  gap: 28px;
+  scroll-padding-block: 24px;
+  overscroll-behavior: contain;
+}
+html[data-surface] .career-chat .chat-message {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+html[data-surface] .career-chat .chat-message.assistant {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+}
+html[data-surface] .career-chat .chat-message.user {
+  max-width: min(80%, 560px);
+  padding: 14px 20px;
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
+  border: 0;
+  border-radius: var(--radius-lg);
+}
+html[data-theme='light'][data-surface] .career-chat .chat-message.user {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+.career-chat .chat-message-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.career-chat .assistant .chat-message-author { color: var(--text-secondary); }
+.career-chat .assistant .chat-message-author svg { color: var(--accent-primary); }
+.career-chat .chat-user-text { white-space: pre-wrap; }
+.chat-prose { max-width: 72ch; }
+.chat-prose > :first-child { margin-top: 0; }
+.chat-prose > :last-child { margin-bottom: 0; }
+.chat-prose p { margin: 0 0 1em; white-space: pre-line; }
+.chat-prose strong { font-weight: 650; color: inherit; }
+.chat-prose :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1.5em 0 0.6em;
+  font-size: 1.125em;
+  font-weight: 650;
+  line-height: 1.4;
+  color: inherit;
+}
+.chat-prose :is(ol, ul) { padding-left: 1.5em; margin: 0.75em 0 1.25em; }
+.chat-prose ol { list-style: decimal; }
+.chat-prose ul { list-style: disc; }
+.chat-prose li { padding-left: 0.25em; margin-block: 0.65em; }
+.chat-prose li > p { margin-bottom: 0.5em; }
+.chat-prose li :is(ul, ol) { margin-block: 0.4em; }
+.chat-prose li li { margin-block: 0.3em; }
+.chat-prose blockquote {
+  margin: 1.25em 0;
+  padding: 4px 0 4px 18px;
+  border-left: 1px solid var(--border-secondary);
+  color: var(--text-secondary);
+}
+.chat-prose blockquote p:last-child { margin-bottom: 0; }
+.chat-prose hr { border: 0; border-top: 1px solid var(--border-primary); margin: 1.5em 0; }
+.chat-prose a { color: var(--accent-primary); text-decoration: underline; text-underline-offset: 3px; }
+.chat-prose code { font-size: 0.875em; background: var(--bg-secondary); padding: 2px 5px; border-radius: var(--radius-sm); }
+.chat-prose pre { max-width: 100%; overflow-x: auto; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-sm); }
+.chat-prose pre code { padding: 0; white-space: pre; }
+.career-chat .chat-composer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-primary);
+  padding: 16px max(24px, calc((100% - 820px) / 2));
+  background: var(--bg-card);
+}
+html[data-surface] .career-chat .chat-input-area {
+  padding: 0;
+  gap: 12px;
+  align-items: flex-end;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.career-chat .chat-input {
+  min-width: 0;
+  min-height: 48px;
+  max-height: 144px;
+  resize: none;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  caret-color: var(--accent-primary);
+}
+.career-chat .chat-input::placeholder { color: var(--text-secondary); opacity: 1; }
+.career-chat .chat-input:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.career-chat .chat-send { flex-shrink: 0; width: 48px; min-height: 48px; padding: 0; }
+.career-chat .chat-input-hint { margin: 8px 0 0; font-size: 12px; color: var(--text-secondary); }
+@media (max-width: 640px) {
+  html[data-surface] .career-chat .chat-container { height: calc(100dvh - 230px); min-height: 340px; }
+  .career-chat .chat-messages { padding: 20px 16px; gap: 24px; }
+  .career-chat .chat-composer { padding: 12px 16px; }
+  html[data-surface] .career-chat .chat-message.user { max-width: 90%; padding: 12px 16px; }
+  .career-chat .chat-input-hint { display: none; }
+}

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import Markdown from 'react-markdown';
 import { Send, Compass, Bot, Target, FileText, Loader2 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
 import { createId } from '../types/resume';
@@ -11,11 +12,28 @@ export default function CareerCoach() {
   const resume = resumes.find(r => r.id === activeResumeId);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, isTyping]);
+    const container = messagesRef.current;
+    if (!container) return;
+    const last = chatMessages.at(-1);
+    // Start long answers at their beginning rather than jumping past the advice.
+    const top = !isTyping && last?.role === 'assistant' && lastMessageRef.current
+      ? lastMessageRef.current.offsetTop - 24
+      : container.scrollHeight;
+    container.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' });
+  }, [chatMessages, isTyping, reduceMotion]);
+
+  useEffect(() => {
+    const field = inputRef.current;
+    if (!field) return;
+    field.style.height = 'auto';
+    field.style.height = `${Math.min(field.scrollHeight, 144)}px`;
+  }, [input]);
 
   const send = async (text: string) => {
     if (!text.trim() || isTyping) return;
@@ -81,10 +99,10 @@ export default function CareerCoach() {
         )}
       </div>
 
-      <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="chat-container" style={{ height: 'calc(100vh - 250px)', maxHeight: 700 }}>
+      <div className="glass-card career-chat" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="chat-container">
           {/* Messages */}
-          <div className="chat-messages">
+          <div className="chat-messages" ref={messagesRef} role="log" aria-label="Career coaching conversation" aria-live="polite" aria-relevant="additions">
             {chatMessages.length === 0 && (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
                 <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-md)', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
@@ -114,22 +132,29 @@ export default function CareerCoach() {
             {chatMessages.map(msg => (
               <motion.div
                 key={msg.id}
+                ref={msg.id === chatMessages.at(-1)?.id ? lastMessageRef : undefined}
                 className={`chat-message ${msg.role}`}
-                initial={{ opacity: 0, y: 10 }}
+                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="flex items-start gap-2">
-                  {msg.role === 'assistant' && (
-                    <Compass size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: 3 }} />
-                  )}
-                  <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                <div className="chat-message-author">
+                  {msg.role === 'assistant' && <Compass size={16} aria-hidden="true" />}
+                  <span>{msg.role === 'assistant' ? 'Career coach' : 'You'}</span>
                 </div>
+                {msg.role === 'assistant' ? (
+                  <div className="chat-prose">
+                    <Markdown skipHtml allowedElements={['p', 'strong', 'em', 'ul', 'ol', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code', 'pre', 'hr', 'br', 'a']}
+                      components={{ a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}</a> }}>
+                      {msg.content}
+                    </Markdown>
+                  </div>
+                ) : <div className="chat-user-text">{msg.content}</div>}
               </motion.div>
             ))}
 
             {isTyping && (
-              <div className="chat-message assistant">
+              <div className="chat-message assistant" role="status">
                 <div className="flex items-center gap-2">
                   <Loader2 size={14} className="spin" style={{ color: 'var(--accent-primary)' }} />
                   <span className="text-sm text-muted">
@@ -138,22 +163,31 @@ export default function CareerCoach() {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}
-          <div className="chat-input-area">
-            <input
-              className="chat-input"
-              placeholder="Ask about resumes, interviews, salary, careers..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            />
-            <button className="btn btn-primary" onClick={handleSend} disabled={!input.trim() || isTyping}>
-              <Send size={16} />
-            </button>
-          </div>
+          <form className="chat-composer" onSubmit={e => { e.preventDefault(); handleSend(); }}>
+            <div className="chat-input-area">
+              <textarea
+                ref={inputRef}
+                className="chat-input"
+                rows={1}
+                aria-label="Message the career coach"
+                placeholder="Ask about your next career move…"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault(); handleSend();
+                  }
+                }}
+              />
+              <button type="submit" className="btn btn-primary chat-send" aria-label="Send message" disabled={!input.trim() || isTyping}>
+                <Send size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <p className="chat-input-hint">Enter to send · Shift + Enter for a new line</p>
+          </form>
         </div>
       </div>
     </motion.div>
