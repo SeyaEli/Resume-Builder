@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests-ai/server.test.ts && playwright test --config playwright.ai.config.ts",
+    "test:ai": "npm test",
+    "test:secrets": "node tests-ai/check-build-secrets.mjs"
   },
   "dependencies": {
     "@types/file-saver": "^2.0.7",

@@ -5,8 +5,7 @@ import {
   ArrowRight, ArrowUpRight, AlertTriangle, Loader2, Copy, Check, Target,
 } from 'lucide-react';
 import { useResumeStore } from '../stores/resumeStore';
-import { optimizeResume } from '../services/aiEngine';
-import { runAi } from '../services/aiService';
+import { runAi, optimizeWithAi } from '../services/aiService';
 import { analyzeResume } from '../services/atsScorer';
 import type { OptimizeResult, AITextChange } from '../services/aiEngine';
 
@@ -107,23 +106,19 @@ export default function Optimizer() {
   const [isTargeting, setIsTargeting] = useState(false);
   const [addingSkills, setAddingSkills] = useState(false);
 
-  const handleOptimize = () => {
-    if (!resume) return;
+  const handleOptimize = async () => {
+    if (!resume || isOptimizing) return;
     setIsOptimizing(true);
     setResult(null);
-    // A short pause so the change is visible instead of instant.
-    setTimeout(() => {
-      const output = optimizeResume(resume, options);
-      updateResume(resume.id, {
-        summary: output.updated.summary,
-        experience: output.updated.experience,
-      });
+    try {
+      const output = await optimizeWithAi(resume, options);
+      updateResume(resume.id, { summary: output.updated.summary, experience: output.updated.experience });
       setResult(output);
-      setIsOptimizing(false);
+      if (output.fallbackReason) addToast('warning', output.fallbackReason);
       addToast('success', output.changes.length
-        ? `${output.changes.length} change${output.changes.length === 1 ? '' : 's'} applied to your resume.`
-        : 'Nothing needed rewriting — your bullets are already strong.');
-    }, 900);
+        ? `${output.changes.length} changes applied. Review the before and after text below.`
+        : 'Nothing needed rewriting.');
+    } finally { setIsOptimizing(false); }
   };
 
   const handleTargetJob = async () => {
@@ -138,7 +133,7 @@ export default function Optimizer() {
       setSkillsToAdd(
         skills.text.split('\n').map(l => l.replace(/^[-•*]\s*/, '').trim()).filter(Boolean)
       );
-      if (bullets.fallbackReason) addToast('warning', bullets.fallbackReason);
+      if (bullets.fallbackReason || skills.fallbackReason) addToast('warning', bullets.fallbackReason || skills.fallbackReason || 'Offline suggestions used.');
     } finally {
       setIsTargeting(false);
     }

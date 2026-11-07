@@ -5,7 +5,7 @@ import { useResumeStore } from '../stores/resumeStore';
 import { runAi, generateLinkedInHeadline } from '../services/aiService';
 
 export default function LinkedInOptimizer() {
-  const { resumes, activeResumeId, setPage } = useResumeStore();
+  const { resumes, activeResumeId, setPage, addToast } = useResumeStore();
   const resume = resumes.find(r => r.id === activeResumeId);
   const [generated, setGenerated] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -27,12 +27,13 @@ export default function LinkedInOptimizer() {
       const about = await runAi({ kind: 'linkedin-about', resume, input: title });
       setHeadline(generateLinkedInHeadline(resume, title));
       setAbout(about.text);
+      if (about.fallbackReason) addToast('warning', about.fallbackReason);
 
       setExpText(resume.experience.map(exp =>
         `${exp.jobTitle} at ${exp.company}\n${exp.bullets.filter(b => b.trim()).map(b => `- ${b}`).join('\n')}`
       ).join('\n\n'));
 
-      setSkills(topSkills.length ? topSkills : ['Communilation']);
+      setSkills(topSkills.length ? topSkills : []);
       setKeywords([
         title,
         ...resume.skills.slice(0, 6).map(t => t.name),

@@ -1,3 +1,4 @@
+import { getAiConfig } from './services/aiService';
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
@@ -12,3 +13,6 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Migrate legacy AI settings before any user interaction.
+getAiConfig();

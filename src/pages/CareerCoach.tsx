@@ -7,7 +7,7 @@ import type { ChatMessage } from '../types/resume';
 import { runAi } from '../services/aiService';
 
 export default function CareerCoach() {
-  const { chatMessages, addChatMessage, resumes, activeResumeId, setPage } = useResumeStore();
+  const { chatMessages, addChatMessage, resumes, activeResumeId, setPage, addToast } = useResumeStore();
   const resume = resumes.find(r => r.id === activeResumeId);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -30,10 +30,12 @@ export default function CareerCoach() {
     try {
       const result = await runAi({
         kind: 'coach',
+        history: chatMessages.slice(-12).map(m => ({ role: m.role, content: m.content })),
         resume,
         input: userMsg.content,
         turn: chatMessages.filter(m => m.role === 'user').length,
       });
+      if (result.fallbackReason) addToast('warning', result.fallbackReason);
       const botMsg: ChatMessage = {
         id: createId(), role: 'assistant', content: result.text,
         timestamp: new Date().toISOString(),

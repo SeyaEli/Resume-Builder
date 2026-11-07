@@ -287,20 +287,7 @@ const WEAK_OPENING_RULES: { pattern: RegExp; resolve: (rest: string) => string; 
   { pattern: /^involved in\s+/i, resolve: () => 'Drove', label: 'involved in' },
 ];
 
-const METRIC_CLAUSES: { match: RegExp; clause: string }[] = [
-  { match: /customer|client|user|guest|patient|caller/i, clause: 'improving satisfaction scores by 22%' },
-  { match: /cost|budget|spend|expense|invoice/i, clause: 'cutting costs by 18%' },
-  { match: /time|process|manual|workflow|report|ticket|backlog|turnaround/i, clause: 'cutting turnaround time by 30%' },
-  { match: /revenue|sales|lead|conversion|growth|profit/i, clause: 'increasing revenue by 15%' },
-  { match: /team|mentor|junior|hire|onboard|train|staff/i, clause: 'raising team output by 20%' },
-  { match: /bug|error|incident|downtime|defect|quality|rework/i, clause: 'reducing defects by 40%' },
-  { match: /data|database|query|dashboard|record/i, clause: 'improving reporting accuracy by 25%' },
-  { match: /inventory|stock|supply|logistics|delivery|shipment/i, clause: 'reducing delivery delays by 35%' },
-  { match: /student|course|curriculum|lesson|class|learner/i, clause: 'improving pass rates by 20%' },
-  { match: /audit|compliance|risk|policy/i, clause: 'closing 100% of audit findings on time' },
-];
-
-const DEFAULT_METRIC = 'improving efficiency by 25%';
+const DEFAULT_METRIC = '[add a verified result and measurement]';
 
 export interface RewriteResult {
   text: string;
@@ -352,11 +339,10 @@ export function rewriteBullet(text: string, opts: { addMetrics?: boolean } = {})
   if (beforeFiller !== out) reasons.push('Trimmed filler words that add length but no meaning.');
 
   // 4. Add a measurable result if the bullet has no numbers at all.
-  if (opts.addMetrics && !hasNumber(out)) {
-    const rule = METRIC_CLAUSES.find((r) => r.match.test(out));
-    const clause = rule ? rule.clause : DEFAULT_METRIC;
+  if (opts.addMetrics && !hasNumber(out) && !/\[[^\]]+\]/.test(out)) {
+    const clause = DEFAULT_METRIC;
     out = `${out.replace(/[.;]+$/, '')}, ${clause}`;
-    reasons.push('Added a measurable result — replace the number with your real figure.');
+    reasons.push('Added a placeholder — supply a real result and measurement.');
     verifyNumber = true;
   }
 
@@ -478,11 +464,10 @@ export function suggestBullets(jobTitle: string, jdText: string, count = 4): str
   const [a = 'the main process', b = 'the team', c = 'key reports'] = key;
 
   const templates = [
-    `Led a project for ${role} work using ${a}, delivering it on schedule and cutting rework by 20%`,
-    `Built and maintained ${b} workflows with ${a} and ${c}, handling [number] tasks per week at 98% accuracy`,
-    `Partnered with ${b} to improve ${a} processes, reducing turnaround time by 30%`,
-    `Trained and mentored [number] colleagues on ${a}, raising team output by 20%`,
-    `Reported on ${c} every week, giving managers the data to cut costs by 15%`,
+    `[Action verb] [describe your contribution] for ${role} using ${a}; [add a verified result]`,
+    `[Action verb] [describe your work with ${b}] using ${a}; [add a verified measurement]`,
+    `[Action verb] [describe a relevant project using ${c}]; [add a verified outcome]`,
+    `[Action verb] [describe your contribution to the team]; [add a verified result]`,
   ];
   return templates.slice(0, Math.max(1, Math.min(count, templates.length)));
 }

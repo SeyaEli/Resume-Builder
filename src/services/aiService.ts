@@ -1,21 +1,7 @@
-// ============================================
-// AI Service
-// ============================================
-// One door for every AI feature in the app.
-//
-// Provider 1 — "Built-in engine" (default)
-//   Runs entirely offline in this browser. It reads the user's real resume
-//   and job description and writes from rules + their own words. No key,
-//   no cost, works on a plane.
-//
-// Provider 2 — "Connected model" (optional)
-//   If the user has their own OpenAI-compatible endpoint and key, the same
-//   requests are sent there instead, with the resume as context. If that
-//   call fails for any reason we fall back to the built-in engine and say
-//   so, so the user is never left with an empty box.
-// ============================================
-
 import type { Resume } from '../types/resume';
+import { createId } from '../types/resume';
+import { analyzeResume } from './atsScorer';
+import type { AITextChange, OptimizeResult } from './aiEngine';
 import {
   generateSummary, generateLinkedInHeadline, generateLinkedInAbout, careerCoachReply,
   buildResumeText, suggestBullets, suggestSkills, optimizeResume,
@@ -31,30 +17,27 @@ export interface AiRequest {
   input?: string;
   /** Used by the coach so repeated asks give different, deeper answers. */
   turn?: number;
+  history?: { role: 'user' | 'assistant'; content: string }[];
 }
 
 export interface AiResult {
   text: string;
   /** Which provider actually produced the text. */
-  provider: 'builtin' | 'connected';
+  provider: 'builtin' | 'groq';
   /** Set when a connected model was tried and the built-in engine answered instead. */
   fallbackReason?: string;
 }
 
 export interface AiConfig {
-  provider: 'builtin' | 'connected';
-  baseUrl: string;
+  provider: 'builtin' | 'groq';
   model: string;
-  apiKey: string;
 }
 
 const CONFIG_KEY = 'ats-resume-platform-ai';
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
   provider: 'builtin',
-  baseUrl: '',
   model: '',
-  apiKey: '',
 };
 
 export function getAiConfig(): AiConfig {
@@ -62,15 +45,19 @@ export function getAiConfig(): AiConfig {
     const raw = localStorage.getItem(CONFIG_KEY);
     if (!raw) return { ...DEFAULT_AI_CONFIG };
     const parsed = JSON.parse(raw) as Partial<AiConfig>;
-    return { ...DEFAULT_AI_CONFIG, ...parsed };
+    const safe: AiConfig = { provider: parsed.provider === 'groq' ? 'groq' : 'builtin', model: typeof parsed.model === 'string' ? parsed.model : '' };
+    // Rewrite legacy settings to remove previously stored API keys and endpoints.
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(safe));
+    return safe;
   } catch {
+    try { localStorage.removeItem(CONFIG_KEY); } catch { /* storage unavailable */ }
     return { ...DEFAULT_AI_CONFIG };
   }
 }
 
 export function saveAiConfig(config: AiConfig): void {
   try {
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+    localStorage.setItem(CONFIG_KEY, JSON.stringify({ provider: config.provider, model: config.model }));
   } catch {
     /* private mode — the setting simply does not persist */
   }
@@ -78,36 +65,7 @@ export function saveAiConfig(config: AiConfig): void {
 
 export function isConnectedReady(): boolean {
   const c = getAiConfig();
-  return c.provider === 'connected' && Boolean(c.baseUrl.trim() && c.model.trim());
-}
-
-// ============================================
-// Prompts sent to a connected model
-// ============================================
-
-const SYSTEM_PROMPT =
-  'You are an ATS resume assistant. Write in plain text only: no markdown symbols, ' +
-  'no emoji, no headings, no bullet characters other than "- ". Use the person\'s real ' +
-  'facts from the resume context. Never invent employers, dates or numbers; if a number ' +
-  'is needed, write [number] as a placeholder. Keep the tone factual and specific.';
-
-function providerPrompt(req: AiRequest): string {
-  const resumeText = req.resume ? buildResumeText(req.resume) : '';
-  const context = resumeText
-    ? `\n\nRESUME CONTEXT:\n${resumeText.slice(0, 6000)}`
-    : '\n\nRESUME CONTEXT: (no resume yet)';
-  const jd = req.input ? `\n\nJOB DESCRIPTION / REQUEST:\n${req.input.slice(0, 4000)}` : '';
-
-  const task: Record<AiKind, string> = {
-    summary: 'Write a 3 sentence professional summary (40-70 words) for this person, aimed at the role in the request. Start with their job title. No first person.',
-    coach: 'Answer the request as a career coach. Be concrete and brief: at most 200 words. Where you can, refer to the resume context above.',
-    'cover-letter': 'Write the BODY of a cover letter (3 short paragraphs, under 250 words) for the role in the request. Plain text only. Do not write the address block, greeting or sign-off.',
-    'linkedin-about': 'Rewrite the LinkedIn About section from the resume context: first person, under 200 words, 3 short paragraphs, no hashtags.',
-    bullets: 'Write 4 achievement bullet points for the role in the request. Each must start with a strong action verb, include [number] where a metric belongs, and be under 25 words.',
-    skills: 'List 10 skills this person should add, most important first, one per line, plain names only.',
-  };
-
-  return `${task[req.kind]}${context}${jd}`;
+  return c.provider === 'groq' && hasAiAccessPassword();
 }
 
 // ============================================
@@ -139,23 +97,22 @@ function runBuiltin(req: AiRequest): string {
 
 /** The three paragraphs of a cover letter, written from the user's own facts. */
 export function buildCoverLetterBody(resume: Resume, jobTitle: string): string {
-  const title = jobTitle.trim() || 'this role';
-  const years = resume.experience.length ? `${resume.experience.length * 2}+` : 'several';
+  const title = jobTitle.split('\n')[0].trim() || 'this role';
   const topSkills = resume.skills.slice(0, 4).map((s) => s.name);
   const latest = resume.experience[0];
   const proof = resume.experience
     .flatMap((e) => e.bullets)
     .filter((b) => /(\d|%|\$|₱)/.test(b))[0];
 
-  const para1 = `I am applying for the ${title} position. With ${years} years of experience as ${
+  const para1 = `I am applying for the ${title} position. My background as ${
     latest?.jobTitle || resume.personalInfo.title || 'a professional'
-  }${latest?.company ? ` at ${latest.company}` : ''}, I bring hands-on strength in ${
+  }${latest?.company ? ` at ${latest.company}` : ''} gives me a foundation in ${
     topSkills.slice(0, 3).join(', ') || 'the skills this role needs'
   }.`;
 
   const para2 = proof
     ? `One example from my current work: ${proof.replace(/\.$/, '')}. I would apply the same approach here — find the bottleneck, fix the process, and keep the result measured.`
-    : `In my current role, I took on the tasks nobody had documented, wrote down the process, and cut the time it takes to complete them. That habit is what I would bring to this team.`;
+    : `I would welcome the opportunity to explain how my background could support your team. [Add one specific example of your relevant contribution here.]`;
 
   const para3 = `I would welcome the chance to talk about how this experience maps to your needs, and I am available at ${
     resume.personalInfo.email || 'the contact details above'
@@ -168,85 +125,102 @@ function buildLinkedInAbout(resume: Resume): string {
   return generateLinkedInAbout(resume, resume.personalInfo.title);
 }
 
-// ============================================
-// Connected model call
-// ============================================
+// Requests are always sent to this app's server; no Groq key enters browser code.
+let accessPassword = '';
+export function setAiAccessPassword(password: string): void { accessPassword = password.startsWith('gsk_') ? '' : password; }
+export function hasAiAccessPassword(): boolean { return Boolean(accessPassword); }
 
-async function runConnected(req: AiRequest, config: AiConfig): Promise<string> {
-  const url = `${config.baseUrl.trim().replace(/\/+$/, '')}/chat/completions`;
-  const response = await fetch(url, {
+async function serverRequest(body: object): Promise<{ text?: string; models?: string[] }> {
+  if (!accessPassword) throw new Error('Enter the app access password in Settings first.');
+  const response = await fetch('/api/ai', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: providerPrompt(req) },
-      ],
-      temperature: 0.4,
-      max_tokens: 800,
-    }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessPassword}` },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(30000),
   });
-
-  if (!response.ok) {
-    throw new Error(`The endpoint answered ${response.status}`);
-  }
-
-  const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (typeof text !== 'string' || !text.trim()) {
-    throw new Error('The endpoint returned an empty reply');
-  }
-  return text.trim();
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(typeof data?.error === 'string' ? data.error : 'The AI server is unavailable.');
+  return data;
 }
 
-/** Check a key and endpoint really work, for the Settings screen. */
-export async function testConnection(config: AiConfig): Promise<{ ok: boolean; message: string }> {
-  if (!config.baseUrl.trim() || !config.model.trim()) {
-    return { ok: false, message: 'Add an endpoint and a model name first.' };
-  }
+async function runGroq(req: AiRequest, config: AiConfig): Promise<string> {
+  const data = await serverRequest({
+    kind: req.kind, model: config.model || undefined,
+    context: req.resume ? buildResumeText(req.resume).slice(0, 16000) : '',
+    input: req.input?.slice(0, 12000),
+    history: req.kind === 'coach' ? req.history?.slice(-12).map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) : undefined,
+  });
+  if (typeof data.text !== 'string' || !data.text.trim()) throw new Error('The AI server returned an empty reply.');
+  return data.text.trim();
+}
+
+export async function testConnection(config: AiConfig): Promise<{ ok: boolean; message: string; models?: string[] }> {
   try {
-    const text = await runConnected(
-      { kind: 'summary', input: 'Test', resume: undefined },
-      config
-    );
-    return { ok: true, message: `Connected. The model replied: "${text.slice(0, 60)}…"` };
+    const data = await serverRequest({ kind: 'test', model: config.model || undefined });
+    return { ok: true, message: 'Groq connected. Your API key stays on the server.', models: data.models };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return { ok: false, message: `Could not reach the model — ${message}. The built-in engine still works.` };
+    return { ok: false, message: errorMessage(error) };
   }
 }
 
-// ============================================
-// The one function the pages call
-// ============================================
-
-/** Small pause so the "thinking" state is visible on instant local results. */
-const settle = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+function errorMessage(error: unknown): string {
+  if (error instanceof Error && ['TimeoutError', 'AbortError'].includes(error.name)) return 'Groq took too long. Try again.';
+  return error instanceof Error ? error.message : 'The AI service is unavailable.';
+}
 
 export async function runAi(req: AiRequest): Promise<AiResult> {
   const config = getAiConfig();
-
-  if (config.provider === 'connected' && config.baseUrl.trim() && config.model.trim()) {
-    try {
-      const text = await runConnected(req, config);
-      return { text, provider: 'connected' };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      await settle(400);
-      return {
-        text: runBuiltin(req),
-        provider: 'builtin',
-        fallbackReason: `The connected model failed (${message}), so the built-in engine answered.`,
-      };
+  if (config.provider === 'groq') {
+    try { return { text: await runGroq(req, config), provider: 'groq' }; }
+    catch (error) {
+      return { text: runBuiltin(req), provider: 'builtin', fallbackReason: `${errorMessage(error)} The built-in engine answered instead.` };
     }
   }
-
-  await settle(600);
   return { text: runBuiltin(req), provider: 'builtin' };
+}
+
+export async function optimizeWithAi(resume: Resume, options: OptimizeOptions): Promise<OptimizeResult & { provider: 'groq' | 'builtin'; fallbackReason?: string }> {
+  const config = getAiConfig();
+  if (config.provider !== 'groq') return { ...optimizeResume(resume, options), provider: 'builtin' };
+  try {
+    const source = { summary: resume.summary, experience: resume.experience.map(e => ({ id: e.id, jobTitle: e.jobTitle, company: e.company, bullets: e.bullets })) };
+    const input = JSON.stringify({ options, resume: source });
+    if (input.length > 12000) throw new Error('Resume is too long for one AI rewrite.');
+    const data = await serverRequest({ kind: 'optimize', model: config.model || undefined, context: buildResumeText(resume).slice(0, 16000), input });
+    const parsed = JSON.parse(data.text || '') as { summary: string; experience: { id: string; bullets: string[] }[] };
+    const invalid = () => { throw new Error('Groq returned an invalid rewrite.'); };
+    if (!parsed || typeof parsed.summary !== 'string' || parsed.summary.length > 2500 || !Array.isArray(parsed.experience) || parsed.experience.length !== resume.experience.length) invalid();
+    const changes: AITextChange[] = [];
+    const record = (before: string, after: string, label: string, section: 'summary' | 'experience') => {
+      // Missing measurements must be placeholders; reject numbers absent from the source line.
+      const numbers: string[] = after.match(/\d+(?:[.,]\d+)*/g) || [];
+      const originalNumbers: string[] = before.match(/\d+(?:[.,]\d+)*/g) || [];
+      if (numbers.some(n => !originalNumbers.includes(n)) || originalNumbers.some(n => !numbers.includes(n))) invalid();
+      if (before !== after) changes.push({ id: createId(), before, after, label, section, reasons: ['Rewritten by Groq using your resume facts. Review before sending.'], verifyNumber: /\[[^\]]+\]/.test(after) });
+    };
+    const summary = options.generateSummary ? parsed.summary.trim() : resume.summary;
+    if (options.generateSummary && !summary) invalid();
+    // Summaries may reuse figures from the full resume, but may not introduce new ones.
+    if (options.generateSummary) {
+      const supplied: string[] = buildResumeText(resume).match(/\d+(?:[.,]\d+)*/g) || [];
+      if ((summary.match(/\d+(?:[.,]\d+)*/g) || []).some(n => !supplied.includes(n))) invalid();
+      if (summary !== resume.summary) changes.push({ id: createId(), before: resume.summary, after: summary, label: 'Professional summary', section: 'summary', reasons: ['Rewritten by Groq from your resume facts.'], verifyNumber: /\[[^\]]+\]/.test(summary) });
+    }
+    const experience = resume.experience.map((exp, i) => {
+      const entry = parsed.experience[i];
+      if (!entry || entry.id !== exp.id || !Array.isArray(entry.bullets) || entry.bullets.length !== exp.bullets.length || entry.bullets.some(b => typeof b !== 'string' || b.length > 1000)) invalid();
+      const bullets = options.rewriteBullets ? entry.bullets.map((b, j) => {
+        if (!b.trim() && exp.bullets[j].trim()) invalid();
+        record(exp.bullets[j], b.trim(), exp.jobTitle || 'Experience', 'experience');
+        return b.trim();
+      }) : exp.bullets;
+      return { ...exp, bullets };
+    });
+    const updated = { ...resume, summary, experience };
+    return { updated, changes, needsAttention: [], scoreBefore: analyzeResume(resume).score.overall, scoreAfter: analyzeResume(updated).score.overall, provider: 'groq' };
+  } catch (error) {
+    return { ...optimizeResume(resume, options), provider: 'builtin', fallbackReason: `${errorMessage(error)} The built-in optimizer answered instead.` };
+  }
 }
 
 export { optimizeResume, generateSummary, generateLinkedInHeadline, generateLinkedInAbout, suggestSkills, suggestBullets };

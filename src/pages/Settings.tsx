@@ -8,7 +8,7 @@ import { useResumeStore } from '../stores/resumeStore';
 import { TEMPLATE_INFO } from '../types/resume';
 import type { TemplateType, ThemeMode, SurfaceStyle } from '../types/resume';
 import TemplateThumbnail from '../components/TemplateThumbnail';
-import { getAiConfig, saveAiConfig, testConnection } from '../services/aiService';
+import { getAiConfig, saveAiConfig, testConnection, setAiAccessPassword, hasAiAccessPassword } from '../services/aiService';
 import type { AiConfig } from '../services/aiService';
 import { PALETTES, SURFACES, paletteSwatch, resolveMode } from '../services/themeService';
 
@@ -40,6 +40,9 @@ const LANGUAGES = [
 export default function Settings() {
   const { preferences, resumes, coverLetters, chatMessages, addToast } = useResumeStore();
   const [ai, setAi] = useState<AiConfig>(() => getAiConfig());
+  const [accessPassword, setAccessPassword] = useState('');
+  const [unlocked, setUnlocked] = useState(hasAiAccessPassword());
+  const [models, setModels] = useState<string[]>([]);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
@@ -50,6 +53,7 @@ export default function Settings() {
     setTestResult(null);
     const result = await testConnection(ai);
     setTestResult(result);
+    if (result.models) setModels(result.models);
     setTesting(false);
   };
 
@@ -229,9 +233,9 @@ export default function Settings() {
                 desc: 'Runs inside this browser. Reads your resume and the job posting, needs no key, costs nothing, and works offline.',
               },
               {
-                key: 'connected' as const,
-                title: 'My own model',
-                desc: 'Send the same requests to an OpenAI-compatible endpoint you control. If it fails, the built-in engine answers instead.',
+                key: 'groq' as const,
+                title: 'Groq AI',
+                desc: 'Use Groq for tailored writing and coaching. Your Groq API key stays on the server. Offline writing is available if Groq fails.',
               },
             ].map(option => (
               <button
@@ -255,41 +259,34 @@ export default function Settings() {
             ))}
           </div>
 
-          {ai.provider === 'connected' && (
+          {ai.provider === 'groq' && (
             <div className="flex flex-col gap-3 mt-5">
+              <p className="text-xs text-muted">The app owner configures GROQ_API_KEY privately on the server. Never paste a Groq API key here. Your resume and request are sent through the app server to Groq when you use AI.</p>
               <div className="input-group">
-                <label className="input-label"><Plug size={12} /> Endpoint URL</label>
-                <input
-                  className="input-field"
-                  placeholder="https://your-endpoint/v1"
-                  value={ai.baseUrl}
-                  onChange={e => setAi({ ...ai, baseUrl: e.target.value })}
-                />
+                <label className="input-label" htmlFor="ai-access-password">App access password</label>
+                <input id="ai-access-password" className="input-field" type="password" autoComplete="off"
+                  placeholder={unlocked ? 'Access is unlocked for this visit' : 'Separate password set by the app owner'}
+                  value={accessPassword}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setAccessPassword(value);
+                    setAiAccessPassword(value);
+                    setUnlocked(hasAiAccessPassword());
+                    setTestResult(null);
+                  }} />
+                <p className="text-xs text-muted">Held in memory for this visit only. Re-enter after reloading. This must be different from your Groq key.</p>
+                {accessPassword.startsWith('gsk_') && <p className="text-xs" role="alert">That looks like a Groq API key. Remove it and use the separate app access password.</p>}
               </div>
               <div className="input-group">
-                <label className="input-label">Model name</label>
-                <input
-                  className="input-field"
-                  placeholder="the model your endpoint serves"
-                  value={ai.model}
-                  onChange={e => setAi({ ...ai, model: e.target.value })}
-                />
-              </div>
-              <div className="input-group">
-                <label className="input-label">API key</label>
-                <input
-                  className="input-field"
-                  type="password"
-                  placeholder="sk-..."
-                  value={ai.apiKey}
-                  onChange={e => setAi({ ...ai, apiKey: e.target.value })}
-                />
-                <p className="text-xs text-muted mt-2">
-                  Stored only in this browser and sent straight to your endpoint. Anyone using this computer can read it, so use a key you can revoke.
-                </p>
+                <label className="input-label" htmlFor="ai-model">Writing model</label>
+                <select id="ai-model" className="input-field" value={ai.model} onChange={e => { setAi({ ...ai, model: e.target.value }); setTestResult(null); }}>
+                  <option value="">Server default</option>
+                  {[...new Set(['openai/gpt-oss-20b', 'openai/gpt-oss-120b', ...models])].map(model => <option key={model} value={model}>{model}</option>)}
+                </select>
+                <p className="text-xs text-muted">Test connection checks model availability for the server's Groq account.</p>
               </div>
 
-              <button className="btn btn-secondary" onClick={handleTest} disabled={testing} style={{ width: 'fit-content' }}>
+              <button className="btn btn-secondary" onClick={handleTest} disabled={testing || !unlocked} style={{ width: 'fit-content' }}>
                 {testing ? <><Loader2 size={16} className="spin" /> Testing...</> : <><Plug size={16} /> Test connection</>}
               </button>
 

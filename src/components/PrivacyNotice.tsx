@@ -3,22 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, HardDrive, Wifi, Trash2, X } from 'lucide-react';
 import Logo from './Logo';
 
-/**
- * The privacy notice shown on every visit.
- *
- * It appears once per page load (not once per browser session, and it is not
- * remembered in storage) — every time someone opens the site, they see it.
- *
- * The wording is deliberately literal and matches what the app really does:
- *   - resumes, cover letters, chat and preferences live in localStorage only
- *   - there is no server, no database and no account
- *   - the optional "connect your own model" key is also in localStorage
- *   - AI runs on the device unless the person connects their own endpoint
- *
- * NOTE on the internet claim: this app has no service worker, so it must be
- * opened over the internet every time, from wherever it is hosted. The wording
- * below says exactly that, and must not promise offline access.
- */
 const STORAGE_KEY_NOTE = 'Browser storage used by this app';
 
 export default function PrivacyNotice() {
@@ -104,24 +88,21 @@ export default function PrivacyNotice() {
                   <HardDrive size={17} aria-hidden="true" />
                   <span>
                     Your <strong>resumes, cover letters, chat history and settings</strong> are
-                    kept in your browser's local storage. Nothing is uploaded to us, because
-                    there is nowhere to upload it to.
+                    kept in your browser's local storage. Using Groq AI sends the relevant resume text and your request through this app's server to Groq.
                   </span>
                 </li>
                 <li>
                   <Wifi size={17} aria-hidden="true" />
                   <span>
                     This site is <strong>accessed over the internet, so you need a connection to
-                    open it</strong>. Nothing you write is uploaded while you use it: your resume
-                    is built and saved entirely inside your browser.
+                    open it</strong>. Your resume is saved in your browser; optional Groq AI needs an internet connection.
                   </span>
                 </li>
                 <li>
                   <ShieldCheck size={17} aria-hidden="true" />
                   <span>
                     The built-in writing help <strong>runs on your own device</strong>. If you
-                    choose to connect your own AI service in Settings, that key and your text are
-                    sent straight from your browser to the service you picked — never through us.
+                    choose Groq AI in Settings, relevant text is sent through the app server to Groq. The Groq API key stays on the server. The app access password is held in memory for this visit only.
                   </span>
                 </li>
                 <li>
@@ -155,7 +136,7 @@ export default function PrivacyNotice() {
                       <dt>ats-resume-platform</dt>
                       <dd>Your resumes, cover letters, chat messages and preferences.</dd>
                       <dt>ats-resume-platform-ai</dt>
-                      <dd>Your AI engine choice, and its address, model and key if you added one.</dd>
+                      <dd>Your AI engine choice and model only. Legacy browser-stored API keys are removed when the app opens.</dd>
                       <dt>resume-ai-sidebar-collapsed</dt>
                       <dd>Whether the sidebar is collapsed.</dd>
                     </dl>

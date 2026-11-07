@@ -206,7 +206,8 @@ export default function ResumeBuilder() {
     try {
       const result = await runAi({ kind: 'summary', resume, input: resume.personalInfo.title || 'the role' });
       update({ summary: result.text });
-      addToast('success', result.fallbackReason ? 'Summary written — note: your connected model failed, so the built-in engine answered.' : 'Summary written from your resume.');
+      if (result.fallbackReason) addToast('warning', result.fallbackReason);
+      else addToast('success', 'Summary written from your resume.');
     } finally {
       setAiBusy(false);
     }
